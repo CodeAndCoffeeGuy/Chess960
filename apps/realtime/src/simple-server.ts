@@ -263,6 +263,15 @@ export class SimpleRealtimeServer {
         gamesInProgress: activeGames,
         timestamp: new Date().toISOString(),
       }));
+    } else if (req.url === '/maintenance') {
+      // Check if server is in maintenance mode
+      const isMaintenanceMode = this.isMaintenanceMode();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        maintenance: isMaintenanceMode,
+        message: isMaintenanceMode ? 'Server is in maintenance mode. Games are disabled.' : 'Server is operational.',
+        timestamp: new Date().toISOString(),
+      }));
     } else {
       res.writeHead(404);
       res.end('Not Found');
@@ -358,6 +367,16 @@ export class SimpleRealtimeServer {
     this.initializePrisma();
   }
 
+  // Check if server is in maintenance mode
+  private isMaintenanceMode(): boolean {
+    // In production, disable games. In development (localhost), allow games.
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isLocalhost = process.env.PORT === undefined || process.env.PORT === '8080';
+    
+    // Enable maintenance mode in production, disable in localhost
+    return isProduction && !isLocalhost;
+  }
+
   private async initializePrisma() {
     this.prisma = await this.getPrismaClient();
   }
@@ -365,6 +384,13 @@ export class SimpleRealtimeServer {
   private setupWebSocketServer() {
     this.wss.on('connection', (ws: WebSocket, request) => {
       console.log('[CONN] New WebSocket connection established');
+
+      // Check if server is in maintenance mode
+      if (this.isMaintenanceMode()) {
+        console.log('[MAINTENANCE] Rejecting WebSocket connection - server in maintenance mode');
+        ws.close(1000, 'Server is in maintenance mode. Games are temporarily disabled.');
+        return;
+      }
 
       const connection: ClientConnection = {
         ws,
@@ -551,6 +577,12 @@ export class SimpleRealtimeServer {
 
     if (!connection.user) {
       this.sendError(connection, 'UNAUTHORIZED', 'User not authenticated');
+      return;
+    }
+
+    // Check if server is in maintenance mode
+    if (this.isMaintenanceMode()) {
+      this.sendError(connection, 'MAINTENANCE_MODE', 'Server is in maintenance mode. Games are temporarily disabled.');
       return;
     }
 

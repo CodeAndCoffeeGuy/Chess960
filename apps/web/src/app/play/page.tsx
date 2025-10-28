@@ -21,6 +21,7 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import type { TimeControl } from '@chess960/proto';
 import { useRef } from 'react';
 import { LagDetector } from '@chess960/redis-client';
+import { MaintenanceMode } from '@/components/MaintenanceMode';
 
 function PlayPageContent() {
   const searchParams = useSearchParams();
@@ -457,7 +458,9 @@ function PlayPageContent() {
       toMove: currentGame.toMove,
     });
     return (
-      <div className="relative min-h-screen bg-[#1f1d1a] light:bg-[#f5f1ea] text-white light:text-black overflow-hidden flex flex-col">
+      <>
+        <MaintenanceMode />
+        <div className="relative min-h-screen bg-[#1f1d1a] light:bg-[#f5f1ea] text-white light:text-black overflow-hidden flex flex-col">
         {/* Background layers */}
         <div className="pointer-events-none absolute inset-0">
           {/* Subtle grid */}
@@ -946,17 +949,21 @@ function PlayPageContent() {
           />
         )}
       </div>
+      </>
     );
   }
 
   if (isInQueue) {
     return (
-      <MatchmakingQueue
-        queueState={queueState}
-        timeControl={selectedTimeControl}
-        isRated={isRated}
-        onLeave={handleLeaveQueue}
-      />
+      <>
+        <MaintenanceMode />
+        <MatchmakingQueue
+          queueState={queueState}
+          timeControl={selectedTimeControl}
+          isRated={isRated}
+          onLeave={handleLeaveQueue}
+        />
+      </>
     );
   }
 
@@ -974,11 +981,13 @@ function PlayPageContent() {
 
   // Show loading state while setting up or waiting to join queue
   return (
-    <div
-      className="relative min-h-screen bg-[#1f1d1a] light:bg-[#f5f1ea] text-white light:text-black overflow-hidden flex items-center justify-center"
-      style={{ backgroundColor: isLightMode ? '#f5f1ea' : '#1f1d1a', color: isLightMode ? '#000' : '#fff' }}
-      suppressHydrationWarning
-    >
+    <>
+      <MaintenanceMode />
+      <div
+        className="relative min-h-screen bg-[#1f1d1a] light:bg-[#f5f1ea] text-white light:text-black overflow-hidden flex items-center justify-center"
+        style={{ backgroundColor: isLightMode ? '#f5f1ea' : '#1f1d1a', color: isLightMode ? '#000' : '#fff' }}
+        suppressHydrationWarning
+      >
       {/* Background layers */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 [mask-image:linear-gradient(to_bottom,transparent,black_15%,black_85%,transparent)]">
@@ -1006,6 +1015,7 @@ function PlayPageContent() {
         </p>
       </div>
     </div>
+    </>
   );
 }
 
