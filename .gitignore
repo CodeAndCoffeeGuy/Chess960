@@ -15,6 +15,17 @@ out/
 .env.local
 .env.production
 .env.development.local
+.env.vercel
+.env.vercel.*
+.env.production.local
+.env.vercel.check
+.env.vercel.production
+
+# Sensitive configuration files
+**/.env.vercel*
+**/.env.production*
+**/packages/*/.env*
+**/apps/*/.env*
 
 # Database
 *.db
