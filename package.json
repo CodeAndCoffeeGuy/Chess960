@@ -1,0 +1,42 @@
+{
+  "name": "chess960",
+  "version": "0.1.1",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "pnpm run --parallel dev",
+    "dev:web": "pnpm --filter @chess960/web dev",
+    "dev:realtime": "pnpm --filter @chess960/realtime dev",
+    "dev:all": "pnpm run --parallel dev",
+    "build": "pnpm run build:deps && pnpm --filter @chess960/realtime build",
+    "build:web": "pnpm run build:deps && pnpm --filter @chess960/web build",
+    "build:deps": "pnpm db:generate && pnpm --filter @chess960/proto build && pnpm --filter @chess960/db build && pnpm --filter @chess960/utils build && pnpm --filter @chess960/rating build && pnpm --filter @chess960/redis-client build && pnpm --filter @chess960/timer build && pnpm --filter @chess960/streaming build && pnpm --filter @chess960/stockfish build",
+    "start": "node apps/realtime/dist/index.js",
+    "lint": "pnpm run --recursive lint",
+    "type-check": "pnpm run --recursive typecheck",
+    "typecheck": "pnpm run --recursive typecheck",
+    "db:generate": "pnpm --filter @chess960/db prisma:generate",
+    "db:migrate": "pnpm --filter @chess960/db prisma migrate dev",
+    "db:studio": "pnpm --filter @chess960/db prisma studio"
+  },
+  "dependencies": {
+    "@paypal/checkout-server-sdk": "^1.0.3",
+    "@types/paypal__checkout-server-sdk": "^1.0.8",
+    "next": "^15.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0",
+    "typescript": "^5.5.0",
+    "ws": "^8.18.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@10.14.0"
+}

@@ -1,0 +1,16 @@
+{
+  "name": "@bullet-chess/realtime",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0",
+    "redis": "^4.7.0",
+    "chess.js": "^1.0.0-beta.8",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^10.0.0",
+    "dotenv": "^16.4.5"
+  }
+}

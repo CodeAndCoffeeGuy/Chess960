@@ -1,0 +1,42 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: bullet-chess-cluster
+nodes:
+# Control plane node
+- role: control-plane
+  kubeadmConfigPatches:
+  - |
+    kind: InitConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "ingress-ready=true"
+  extraPortMappings:
+  # Allow access to Istio ingress gateway
+  - containerPort: 80
+    hostPort: 80
+    protocol: TCP
+  - containerPort: 443
+    hostPort: 443
+    protocol: TCP
+  # WebSocket port (using different host port to avoid conflicts)
+  - containerPort: 8080
+    hostPort: 8888
+    protocol: TCP
+  # Monitoring ports
+  - containerPort: 3000
+    hostPort: 3000
+    protocol: TCP
+  - containerPort: 9090
+    hostPort: 9090
+    protocol: TCP
+
+# Worker nodes for our services
+- role: worker
+  labels:
+    node-type: websocket-gateway
+- role: worker
+  labels:
+    node-type: game-engine
+- role: worker
+  labels:
+    node-type: database

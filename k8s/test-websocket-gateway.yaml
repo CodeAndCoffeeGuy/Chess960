@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: websocket-gateway-test
+  namespace: bullet-chess
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: websocket-gateway-test
+  template:
+    metadata:
+      labels:
+        app: websocket-gateway-test
+    spec:
+      containers:
+      - name: websocket-gateway
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+          name: http
+        - containerPort: 8080
+          name: websocket
+        - containerPort: 9090
+          name: metrics
+        env:
+        - name: NODE_ENV
+          value: "production"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: websocket-gateway-test-service
+  namespace: bullet-chess
+spec:
+  selector:
+    app: websocket-gateway-test
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  - name: websocket
+    port: 8080
+    targetPort: 80
+  - name: metrics
+    port: 9090
+    targetPort: 80

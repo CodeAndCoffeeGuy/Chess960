@@ -1,0 +1,28 @@
+{
+  "name": "@chess960/streaming",
+  "version": "0.1.0",
+  "description": "WebSocket streaming utilities for Chess960 platform",
+  "keywords": ["chess", "chess960", "websocket", "streaming", "realtime"],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CodeAndCoffeeGuy/chess960.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "ws": "^8.14.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "@types/ws": "^8.5.0"
+  }
+}

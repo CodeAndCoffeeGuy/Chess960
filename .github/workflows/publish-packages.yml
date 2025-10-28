@@ -1,0 +1,52 @@
+name: Publish Packages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-workspace.yaml'
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@chess960'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Publish packages
+        run: |
+          cd packages/db && pnpm publish --access public
+          cd ../proto && pnpm publish --access public
+          cd ../rating && pnpm publish --access public
+          cd ../redis-client && pnpm publish --access public
+          cd ../stockfish && pnpm publish --access public
+          cd ../streaming && pnpm publish --access public
+          cd ../timer && pnpm publish --access public
+          cd ../utils && pnpm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

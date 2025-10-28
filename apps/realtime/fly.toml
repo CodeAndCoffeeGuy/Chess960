@@ -1,0 +1,71 @@
+# Fly.io configuration for realtime WebSocket server
+
+app = "chess960-ws"
+primary_region = "iad"  # US East (Virginia) - change based on your primary audience
+
+[experimental]
+  allowed_public_ports = []
+  auto_rollback = true
+
+[env]
+  NODE_ENV = "production"
+  WS_PORT = "8080"
+  HEALTH_PORT = "8081"
+
+[build]
+  dockerfile = "../../Dockerfile.realtime"
+
+[[services]]
+  internal_port = 8080
+  processes = ["app"]
+  protocol = "tcp"
+
+  [[services.ports]]
+    force_https = false
+    handlers = ["http"]
+    port = 80
+    
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+
+  # WebSocket upgrade support
+  [[services.http_checks]]
+    interval = "15s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/health"
+    protocol = "http"
+    restart_limit = 0
+    timeout = "10s"
+
+# Health check service
+[[services]]
+  internal_port = 8081
+  processes = ["app"]
+  protocol = "tcp"
+
+  [[services.ports]]
+    handlers = ["http"]
+    port = 8081
+
+  [[services.http_checks]]
+    interval = "30s"
+    grace_period = "5s"
+    method = "GET"
+    path = "/health"
+    protocol = "http"
+    timeout = "2s"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
+
+# Scale to zero when no connections
+[deploy]
+  strategy = "rolling"
+
+[metrics]
+  port = 9090
+  path = "/metrics"

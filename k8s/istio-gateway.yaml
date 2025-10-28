@@ -1,0 +1,286 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: bullet-chess-gateway
+  namespace: bullet-chess
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  # HTTP (redirect to HTTPS)
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*.bulletchess.org"
+    - "bulletchess.org"
+    tls:
+      httpsRedirect: true
+  # HTTPS
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    hosts:
+    - "*.bulletchess.org"
+    - "bulletchess.org"
+    tls:
+      mode: SIMPLE
+      credentialName: bulletchess-tls-secret
+  # WebSocket port
+  - port:
+      number: 8080
+      name: websocket
+      protocol: HTTP
+    hosts:
+    - "ws.bulletchess.org"
+
+---
+# Virtual Service for routing
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: bullet-chess-routes
+  namespace: bullet-chess
+spec:
+  hosts:
+  - "bulletchess.org"
+  - "www.bulletchess.org"
+  - "api.bulletchess.org"
+  - "ws.bulletchess.org"
+  gateways:
+  - bullet-chess-gateway
+  http:
+  # WebSocket traffic
+  - match:
+    - headers:
+        upgrade:
+          exact: websocket
+    - headers:
+        connection:
+          regex: ".*[Uu]pgrade.*"
+    - uri:
+        prefix: "/ws"
+    route:
+    - destination:
+        host: websocket-gateway-service
+        port:
+          number: 8080
+    timeout: 3600s  # Long timeout for WebSocket connections
+
+  # API routes
+  - match:
+    - uri:
+        prefix: "/api/auth"
+    route:
+    - destination:
+        host: user-service
+        port:
+          number: 8080
+    fault:
+      delay:
+        percentage:
+          value: 0.1
+        fixedDelay: 5s
+    retries:
+      attempts: 3
+      perTryTimeout: 2s
+
+  - match:
+    - uri:
+        prefix: "/api/game"
+    route:
+    - destination:
+        host: game-engine-service
+        port:
+          number: 8080
+    retries:
+      attempts: 3
+      perTryTimeout: 1s
+
+  - match:
+    - uri:
+        prefix: "/api/matchmaking"
+    route:
+    - destination:
+        host: matchmaking-service
+        port:
+          number: 8080
+
+  # Static files and frontend (default route)
+  - match:
+    - uri:
+        prefix: "/"
+    route:
+    - destination:
+        host: web-frontend-service
+        port:
+          number: 3000
+
+---
+# Destination Rules for load balancing
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: websocket-gateway-destination
+  namespace: bullet-chess
+spec:
+  host: websocket-gateway-service
+  trafficPolicy:
+    loadBalancer:
+      consistentHash:
+        httpHeaderName: "x-user-id"  # Sticky sessions for WebSocket
+    connectionPool:
+      tcp:
+        maxConnections: 1000
+        tcpNoDelay: true
+        keepAlive:
+          time: 7200s
+          interval: 75s
+      http:
+        http1MaxPendingRequests: 10
+        maxRequestsPerConnection: 100
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: game-engine-destination
+  namespace: bullet-chess
+spec:
+  host: game-engine-service
+  trafficPolicy:
+    loadBalancer:
+      simple: LEAST_CONN  # Route to least loaded instance
+    connectionPool:
+      tcp:
+        maxConnections: 500
+        connectTimeout: 30s
+      http:
+        http1MaxPendingRequests: 100
+        maxRequestsPerConnection: 10
+        maxRetries: 3
+        consecutiveGatewayErrors: 5
+        interval: 30s
+        baseEjectionTime: 30s
+        maxEjectionPercent: 50
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: user-service-destination
+  namespace: bullet-chess
+spec:
+  host: user-service
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+    connectionPool:
+      tcp:
+        maxConnections: 200
+      http:
+        http1MaxPendingRequests: 50
+        maxRequestsPerConnection: 10
+
+---
+# Service Entry for external dependencies
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: external-redis
+  namespace: bullet-chess
+spec:
+  hosts:
+  - redis.bulletchess.org
+  ports:
+  - number: 6379
+    name: redis
+    protocol: TCP
+  location: MESH_EXTERNAL
+  resolution: DNS
+
+---
+# Circuit Breaker for external services
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: external-services-circuit-breaker
+  namespace: bullet-chess
+spec:
+  host: "*.external.com"
+  trafficPolicy:
+    outlierDetection:
+      consecutiveGatewayErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+      minHealthPercent: 50
+
+---
+# Rate limiting
+apiVersion: networking.istio.io/v1beta1
+kind: EnvoyFilter
+metadata:
+  name: rate-limit-filter
+  namespace: bullet-chess
+spec:
+  workloadSelector:
+    labels:
+      app: websocket-gateway
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.local_ratelimit
+        typed_config:
+          "@type": type.googleapis.com/udpa.type.v1.TypedStruct
+          type_url: type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+          value:
+            stat_prefix: local_rate_limiter
+            token_bucket:
+              max_tokens: 1000
+              tokens_per_fill: 1000
+              fill_interval: 60s
+            filter_enabled:
+              runtime_key: local_rate_limit_enabled
+              default_value:
+                numerator: 100
+                denominator: HUNDRED
+            filter_enforced:
+              runtime_key: local_rate_limit_enforced
+              default_value:
+                numerator: 100
+                denominator: HUNDRED
+
+---
+# Telemetry configuration
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: default-metrics
+  namespace: bullet-chess
+spec:
+  metrics:
+  - providers:
+    - name: prometheus
+  - overrides:
+    - match:
+        metric: ALL_METRICS
+      disabled: false
+    - match:
+        metric: REQUEST_COUNT
+      tags:
+        request_protocol: "unknown"
+    - match:
+        metric: REQUEST_DURATION
+      tags:
+        request_protocol: "unknown"

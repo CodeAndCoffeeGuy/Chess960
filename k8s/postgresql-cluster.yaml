@@ -1,0 +1,186 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgresql-cluster
+  namespace: bullet-chess
+spec:
+  instances: 3  # 1 primary + 2 replicas
+
+  postgresql:
+    parameters:
+      # Performance tuning for high-concurrent chess platform
+      max_connections: "1000"
+      shared_buffers: "2GB"
+      effective_cache_size: "6GB"
+      maintenance_work_mem: "512MB"
+      checkpoint_completion_target: "0.9"
+      wal_buffers: "16MB"
+      default_statistics_target: "100"
+      random_page_cost: "1.1"
+      effective_io_concurrency: "200"
+      work_mem: "4MB"
+      min_wal_size: "1GB"
+      max_wal_size: "4GB"
+
+      # Replication settings
+      max_replication_slots: "10"
+      max_wal_senders: "10"
+
+      # Logging for monitoring
+      log_min_duration_statement: "1000"
+      log_checkpoints: "on"
+      log_connections: "on"
+      log_disconnections: "on"
+      log_lock_waits: "on"
+
+  bootstrap:
+    initdb:
+      database: bullet_chess
+      owner: chess_app
+      secret:
+        name: postgresql-credentials
+
+  primaryUpdateStrategy: unsupervised
+
+  storage:
+    size: 500Gi
+    storageClass: fast-ssd
+    resizeInUseVolumes: true
+
+  resources:
+    requests:
+      memory: "8Gi"
+      cpu: "2000m"
+    limits:
+      memory: "16Gi"
+      cpu: "4000m"
+
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: cnpg.io/cluster
+            operator: In
+            values:
+            - postgresql-cluster
+        topologyKey: kubernetes.io/hostname
+
+  monitoring:
+    enabled: true
+    podMonitor:
+      enabled: true
+
+---
+# Read-only replicas for analytics workload
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgresql-analytics
+  namespace: bullet-chess
+spec:
+  instances: 2  # Analytics read replicas
+
+  postgresql:
+    parameters:
+      max_connections: "500"
+      shared_buffers: "4GB"
+      effective_cache_size: "12GB"
+      work_mem: "16MB"  # Higher for analytics queries
+      maintenance_work_mem: "1GB"
+
+  storage:
+    size: 1000Gi  # More storage for analytics
+    storageClass: standard-ssd
+
+  resources:
+    requests:
+      memory: "16Gi"
+      cpu: "4000m"
+    limits:
+      memory: "32Gi"
+      cpu: "8000m"
+
+  replica:
+    enabled: true
+    source: "postgresql-cluster"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgresql-credentials
+  namespace: bullet-chess
+type: kubernetes.io/basic-auth
+data:
+  username: Y2hlc3NfYXBw  # chess_app
+  password: cGFzc3dvcmQ=  # password (change this!)
+
+---
+# Connection pooler for better resource management
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgbouncer
+  namespace: bullet-chess
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: pgbouncer
+  template:
+    metadata:
+      labels:
+        app: pgbouncer
+    spec:
+      containers:
+      - name: pgbouncer
+        image: pgbouncer/pgbouncer:1.20.1
+        ports:
+        - containerPort: 5432
+        env:
+        - name: DATABASES_HOST
+          value: postgresql-cluster-rw
+        - name: DATABASES_PORT
+          value: "5432"
+        - name: DATABASES_USER
+          value: chess_app
+        - name: DATABASES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgresql-credentials
+              key: password
+        - name: DATABASES_DBNAME
+          value: bullet_chess
+        - name: POOL_MODE
+          value: transaction
+        - name: MAX_CLIENT_CONN
+          value: "1000"
+        - name: DEFAULT_POOL_SIZE
+          value: "50"
+        - name: MIN_POOL_SIZE
+          value: "10"
+        - name: RESERVE_POOL_SIZE
+          value: "5"
+        - name: MAX_DB_CONNECTIONS
+          value: "100"
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgbouncer-service
+  namespace: bullet-chess
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 5432
+  selector:
+    app: pgbouncer

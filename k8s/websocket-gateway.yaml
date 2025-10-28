@@ -1,0 +1,155 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: websocket-gateway
+  namespace: bullet-chess
+  labels:
+    app: websocket-gateway
+    version: v1
+spec:
+  replicas: 10  # Start with 10 replicas for 100K players
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 50%
+      maxUnavailable: 25%
+  selector:
+    matchLabels:
+      app: websocket-gateway
+  template:
+    metadata:
+      labels:
+        app: websocket-gateway
+        version: v1
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - websocket-gateway
+              topologyKey: kubernetes.io/hostname
+      containers:
+      - name: websocket-gateway
+        image: bullet-chess/websocket-gateway:latest
+        ports:
+        - containerPort: 8080
+          name: websocket
+        - containerPort: 8081
+          name: health
+        - containerPort: 9090
+          name: metrics
+        env:
+        - name: WS_PORT
+          value: "8080"
+        - name: HEALTH_PORT
+          value: "8081"
+        - name: METRICS_PORT
+          value: "9090"
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: redis-credentials
+              key: url
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: jwt-secret
+              key: secret
+        - name: NODE_ENV
+          value: "production"
+        - name: LOG_LEVEL
+          value: "info"
+        resources:
+          requests:
+            cpu: 1000m
+            memory: 2Gi
+          limits:
+            cpu: 2000m
+            memory: 4Gi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8081
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "sleep 15"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: websocket-gateway-service
+  namespace: bullet-chess
+  labels:
+    app: websocket-gateway
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: websocket
+  - port: 8081
+    targetPort: 8081
+    name: health
+  - port: 9090
+    targetPort: 9090
+    name: metrics
+  selector:
+    app: websocket-gateway
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: websocket-gateway-hpa
+  namespace: bullet-chess
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: websocket-gateway
+  minReplicas: 5   # Minimum 5 replicas
+  maxReplicas: 50  # Scale up to 50 replicas for peak load
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60

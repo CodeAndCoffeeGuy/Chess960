@@ -1,0 +1,23 @@
+{
+  "name": "@chess960/rating",
+  "version": "0.1.0",
+  "description": "Chess rating system using Glicko-2 algorithm for Chess960 platform",
+  "keywords": ["chess", "chess960", "rating", "glicko2", "elo", "statistics"],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CodeAndCoffeeGuy/chess960.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

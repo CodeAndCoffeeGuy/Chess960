@@ -1,0 +1,44 @@
+{
+  "name": "@chess960/stockfish",
+  "version": "0.1.0",
+  "description": "Stockfish chess engine integration for Chess960 platform",
+  "keywords": ["chess", "chess960", "stockfish", "engine", "analysis", "ai"],
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CodeAndCoffeeGuy/chess960.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./browser": "./dist/browser.js"
+  },
+  "typesVersions": {
+    "*": {
+      "browser": ["dist/browser.d.ts"]
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src/**/*.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "stockfish": "^17.1.0",
+    "chess.js": "^1.0.0-beta.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0",
+    "eslint": "^9.0.0",
+    "@eslint/js": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0"
+  }
+}

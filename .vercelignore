@@ -1,0 +1,16 @@
+# Don't ignore workspace packages - we need them for the build
+!packages/
+!apps/
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+
+# Ignore build outputs that will be regenerated
+apps/web/.next/
+apps/realtime/dist/
+packages/*/dist/
+packages/*/node_modules/
+
+# Ignore development files
+*.log
+.env.local
+.DS_Store

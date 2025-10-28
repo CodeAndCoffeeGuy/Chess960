@@ -1,0 +1,51 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: bullet-chess-gateway
+  namespace: bullet-chess
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  # HTTP for local testing
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+
+---
+# Simple Virtual Service for testing
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: bullet-chess-routes
+  namespace: bullet-chess
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - bullet-chess-gateway
+  http:
+  # WebSocket traffic
+  - match:
+    - headers:
+        upgrade:
+          exact: websocket
+    route:
+    - destination:
+        host: realtime-service
+        port:
+          number: 8080
+    timeout: 3600s
+
+  # Default route to WebSocket service for testing
+  - match:
+    - uri:
+        prefix: "/"
+    route:
+    - destination:
+        host: realtime-service
+        port:
+          number: 8080

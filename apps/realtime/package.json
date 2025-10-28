@@ -1,0 +1,51 @@
+{
+  "name": "@chess960/realtime",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "dev:chess960": "tsx watch src/chess960-server.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "start:chess960": "node dist/chess960-server.js",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@chess960/db": "workspace:*",
+    "@chess960/proto": "workspace:*",
+    "@chess960/rating": "workspace:*",
+    "@chess960/utils": "workspace:*",
+    "@chess960/redis-client": "workspace:*",
+    "@chess960/streaming": "workspace:*",
+    "@chess960/timer": "workspace:*",
+    "@chess960/stockfish": "workspace:*",
+    "ws": "^8.18.0",
+    "redis": "^4.7.0",
+    "ioredis": "^5.4.1",
+    "chess.js": "^1.0.0-beta.8",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^10.0.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.0",
+    "@types/jsonwebtoken": "^9.0.0",
+    "@types/uuid": "^10.0.0",
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.5.0",
+    "jest": "^29.7.0",
+    "eslint": "^9.0.0",
+    "@eslint/js": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0"
+  }
+}

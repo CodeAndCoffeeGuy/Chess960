@@ -1,0 +1,55 @@
+FROM node:18-alpine AS builder
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Set working directory
+WORKDIR /app
+
+# Copy workspace files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages ./packages
+COPY apps/realtime ./apps/realtime
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Build all workspace dependencies and the realtime app
+RUN pnpm --filter @chess960/realtime build
+
+# Production stage
+FROM node:18-alpine3.18
+
+# Install OpenSSL and other dependencies for Prisma
+RUN apk add --no-cache openssl openssl-dev
+
+# Install pnpm
+RUN npm install -g pnpm
+
+WORKDIR /app
+
+# Copy workspace configuration
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+# Copy built packages
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/apps/realtime ./apps/realtime
+
+# Install only production dependencies
+RUN pnpm install --frozen-lockfile --prod
+
+# Generate Prisma client
+RUN cd packages/db && pnpm exec prisma generate
+
+# Set working directory to realtime app
+WORKDIR /app/apps/realtime
+
+# Expose ports
+EXPOSE 8080 8081 9090
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8081/health || exit 1
+
+# Start the service
+CMD ["node", "dist/index.js"]

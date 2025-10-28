@@ -1,0 +1,33 @@
+app = "chess960-ws"
+primary_region = "iad"
+
+[env]
+  NODE_ENV = "production"
+  WS_PORT = "8080"
+  HEALTH_PORT = "8081"
+
+[build]
+  dockerfile = "Dockerfile"
+  dockerfile-build-target = "realtime-runner"
+
+[[services]]
+  internal_port = 8080
+  processes = ["app"]
+  protocol = "tcp"
+
+  [[services.ports]]
+    force_https = false
+    handlers = ["http"]
+    port = 80
+    
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
+
+[deploy]
+  strategy = "rolling"

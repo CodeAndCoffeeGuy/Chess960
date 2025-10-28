@@ -1,0 +1,21 @@
+[phases.setup]
+nixPkgs = ['nodejs_18', 'pnpm']
+
+[phases.install]
+cmds = ['pnpm install']
+
+[phases.build]
+cmds = [
+  'pnpm --filter @bullet-chess/proto build',
+  'DATABASE_URL="postgresql://user:pass@localhost:5432/db" pnpm --filter @bullet-chess/db prisma:generate',
+  'pnpm --filter @bullet-chess/db build', 
+  'pnpm --filter @bullet-chess/utils build',
+  'pnpm --filter @bullet-chess/rating build',
+  'pnpm --filter @bullet-chess/redis-client build',
+  'pnpm --filter @bullet-chess/timer build',
+  'pnpm --filter @bullet-chess/streaming build',
+  'pnpm --filter @bullet-chess/realtime build'
+]
+
+[start]
+cmd = 'cd packages/db && DATABASE_URL="${DATABASE_URL}" npx prisma generate && cd ../.. && node apps/realtime/dist/index.js'
