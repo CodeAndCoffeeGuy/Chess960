@@ -8,10 +8,10 @@ import { prisma } from '@chess960/db';
 // - Rapid: 480-1499s (8-25 min)
 // - Classical: >= 1500s (25+ min)
 const SPEED_TO_TIME_CONTROLS: Record<string, string[]> = {
-  BULLET: ['1+0'],  // Test with single enum value
-  BLITZ: ['1+0'],  // Fallback to valid enum value
-  RAPID: ['1+0'],  // Fallback to valid enum value
-  CLASSICAL: ['1+0'],  // Fallback to valid enum value
+  BULLET: ['ONE_PLUS_ZERO', 'TWO_PLUS_ZERO', 'TWO_PLUS_ONE'],
+  BLITZ: ['THREE_PLUS_ZERO', 'THREE_PLUS_TWO', 'FIVE_PLUS_ZERO', 'FIVE_PLUS_THREE'],
+  RAPID: ['TEN_PLUS_ZERO', 'TEN_PLUS_FIVE', 'FIFTEEN_PLUS_ZERO', 'FIFTEEN_PLUS_TEN'],
+  CLASSICAL: ['THIRTY_PLUS_ZERO', 'THIRTY_PLUS_TWENTY', 'SIXTY_PLUS_ZERO'],
 };
 
 export async function GET(request: NextRequest) {
