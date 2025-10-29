@@ -3,26 +3,96 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GuestProfile } from '@/components/guest/GuestProfile';
-import { verifyTokenClientSide } from '@chess960/utils';
+import { getUserContextFromCookies, clearAuthToken, GHOST_USERNAME } from '@chess960/utils';
 
 export default function GuestProfilePage() {
   const router = useRouter();
-  const [isGuest, setIsGuest] = useState(false);
+  const [userContext, setUserContext] = useState<{ isAuth: boolean; username?: string; type?: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkGuestStatus();
+    checkUserStatus();
   }, []);
 
-  const checkGuestStatus = async () => {
+  const checkUserStatus = async () => {
     try {
-      console.log('[DEBUG] All cookies:', document.cookie);
-      let authToken = document.cookie.split('; ').find(row => row.startsWith('auth-token='))?.split('=')[1];
-      console.log('[DEBUG] Extracted auth token:', authToken);
-      
+      // Get user context from cookies
+      const context = getUserContextFromCookies();
+
+      // If user is authenticated (has a real account), redirect to user profile
+      if (context.isAuth) {
+        console.log('Authenticated user detected, redirecting to user profile');
+        console.log('User context:', context);
+        if (context.username) {
+          // First check if the user actually exists in the database
+          try {
+            const response = await fetch(`/api/user/stats/${context.username}`);
+            if (response.ok) {
+              router.push(`/profile/${context.username}`);
+            } else {
+              console.log('User not found in database, clearing token and staying as guest');
+              clearAuthToken();
+              // Create a new guest token and stay on guest profile page
+              try {
+                const response = await fetch('/api/auth/guest-simple', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                });
+
+                if (response.ok) {
+                  console.log('Guest token created after clearing invalid user token');
+                  // Wait a moment for the cookie to be set, then re-check
+                  await new Promise(resolve => setTimeout(resolve, 100));
+                  const newContext = getUserContextFromCookies();
+                  setUserContext(newContext);
+                } else {
+                  console.error('Failed to create guest token after clearing invalid user token');
+                  setUserContext({ isAuth: false, type: 'guest' });
+                }
+              } catch (error) {
+                console.error('Error creating guest token after clearing invalid user token:', error);
+                setUserContext({ isAuth: false, type: 'guest' });
+              }
+            }
+          } catch (error) {
+            console.log('Error checking user existence, clearing token and staying as guest');
+            clearAuthToken();
+            // Create a new guest token and stay on guest profile page
+            try {
+              const response = await fetch('/api/auth/guest-simple', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
+
+              if (response.ok) {
+                console.log('Guest token created after error clearing invalid user token');
+                // Wait a moment for the cookie to be set, then re-check
+                await new Promise(resolve => setTimeout(resolve, 100));
+                const newContext = getUserContextFromCookies();
+                setUserContext(newContext);
+              } else {
+                console.error('Failed to create guest token after error clearing invalid user token');
+                setUserContext({ isAuth: false, type: 'guest' });
+              }
+            } catch (guestError) {
+              console.error('Error creating guest token after error clearing invalid user token:', guestError);
+              setUserContext({ isAuth: false, type: 'guest' });
+            }
+          }
+        } else {
+          console.log('No username found, redirecting to home');
+          router.push('/');
+        }
+        return;
+      }
+
       // If no token exists, create a guest token
-      if (!authToken) {
-        console.log('No guest token found, creating one...');
+      if (!context.userId) {
+        console.log('No token found, creating guest token...');
         try {
           const response = await fetch('/api/auth/guest-simple', {
             method: 'POST',
@@ -30,15 +100,13 @@ export default function GuestProfilePage() {
               'Content-Type': 'application/json',
             },
           });
-          
+
           if (response.ok) {
-            const data = await response.json();
-            console.log('Guest token created:', data);
-            // The cookie should be set by the response
-            // Wait a moment for the cookie to be set, then re-check for the token
+            console.log('Guest token created');
+            // Wait a moment for the cookie to be set, then re-check
             await new Promise(resolve => setTimeout(resolve, 100));
-            authToken = document.cookie.split('; ').find(row => row.startsWith('auth-token='))?.split('=')[1];
-            console.log('Auth token after API call and delay:', authToken);
+            const newContext = getUserContextFromCookies();
+            setUserContext(newContext);
           } else {
             console.error('Failed to create guest token');
             router.push('/');
@@ -49,45 +117,11 @@ export default function GuestProfilePage() {
           router.push('/');
           return;
         }
+      } else {
+        setUserContext(context);
       }
-
-      if (!authToken) {
-        console.error('Still no auth token after creation attempt');
-        router.push('/');
-        return;
-      }
-
-      console.log('Auth token found:', authToken);
-      console.log('Token length:', authToken?.length);
-      console.log('Token preview:', authToken?.substring(0, 50) + '...');
-      
-      const payload = verifyTokenClientSide(authToken);
-      console.log('Parsed payload:', payload);
-
-      if (!payload || !payload.userId) {
-        console.error('Invalid token payload:', payload);
-        router.push('/');
-        return;
-      }
-
-      // If user has a regular user account, redirect them to their user profile
-      if (payload.type === 'user') {
-        console.log('Regular user detected, redirecting to user profile');
-        router.push('/profile');
-        return;
-      }
-
-      // Only allow guest users to access this page
-      if (payload.type !== 'guest') {
-        console.error('Invalid user type for guest profile:', payload.type);
-        router.push('/');
-        return;
-      }
-
-      console.log('Guest token validated successfully:', payload);
-      setIsGuest(true);
     } catch (error) {
-      console.error('Error checking guest status:', error);
+      console.error('Error checking user status:', error);
       router.push('/');
     } finally {
       setLoading(false);
@@ -105,24 +139,29 @@ export default function GuestProfilePage() {
     );
   }
 
-  if (!isGuest) {
+  if (!userContext) {
     return null; // Will redirect
   }
 
-  return (
-    <div className="relative min-h-screen bg-[#1f1d1a] light:bg-[#f5f1ea] text-white light:text-black">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-white light:text-black mb-2">Guest Profile</h1>
-            <p className="text-[#a0958a] light:text-[#5a5449]">
-              Your guest session progress and statistics
-            </p>
-          </div>
-          
-          <GuestProfile />
-        </div>
-      </div>
-    </div>
-  );
+          return (
+            <div className="relative min-h-screen bg-[#1f1d1a] light:bg-[#f5f1ea] text-white light:text-black">
+              <div className="container mx-auto px-4 py-8">
+                <div className="max-w-4xl mx-auto">
+                  <div className="mb-6">
+                    <h1 className="text-3xl font-bold text-white light:text-black mb-2">Guest Profile</h1>
+                    <p className="text-[#a0958a] light:text-[#5a5449]">
+                      Your guest session progress and statistics
+                    </p>
+                    {userContext.username && (
+                      <p className="text-sm text-[#8a7f73] light:text-[#6b6358] mt-2">
+                        Playing as: {userContext.username}
+                      </p>
+                    )}
+                  </div>
+
+                  <GuestProfile />
+                </div>
+              </div>
+            </div>
+          );
 }

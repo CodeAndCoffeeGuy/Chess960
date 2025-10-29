@@ -63,7 +63,7 @@ function ErrorContent() {
 
         <a
           href="/auth/signin"
-          className="inline-block px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          className="inline-block px-6 py-3 bg-gradient-to-br from-[#35322e] to-[#2a2926] light:from-white light:to-[#faf7f2] border border-[#474239] light:border-[#d4caba] hover:border-orange-300 text-white light:text-black hover:bg-[#3a3632] light:hover:bg-[#f5f1ea] rounded-lg transition-all duration-200 font-medium"
         >
           Try Again
         </a>

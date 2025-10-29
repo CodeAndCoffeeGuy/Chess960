@@ -14,15 +14,15 @@ export async function GET(request: NextRequest) {
     const authService = getAuthService();
     const payload = authService.verifyAuthToken(authToken);
     
-    if (!payload || !payload.userId.startsWith('guest_')) {
+    if (!payload || payload.type !== 'guest') {
       return NextResponse.json({ error: 'Invalid guest token' }, { status: 401 });
     }
 
     // Import guest rating manager
     const { guestRatingManager } = await import('@chess960/realtime/src/services/guest-rating-manager');
     
-    // Get guest data
-    const guestData = guestRatingManager.getGuestData(payload.userId);
+    // Get guest data (now async)
+    const guestData = await guestRatingManager.getGuestData(payload.userId);
     
     // Convert Map to object for JSON serialization
     const ratings = Object.fromEntries(guestData.ratings);

@@ -189,7 +189,7 @@ export function Navigation() {
                       }}
                       className="w-full px-4 py-2 text-left text-[#c1b9ad] light:text-[#4a453e] hover:bg-[#35322e] light:hover:bg-[#f0ebe0] transition-colors"
                     >
-                      Quick Play (Bullet)
+                      Play Bullet
                     </button>
                     <button
                       onClick={() => {
@@ -199,7 +199,7 @@ export function Navigation() {
                       }}
                       className="w-full px-4 py-2 text-left text-[#c1b9ad] light:text-[#4a453e] hover:bg-[#35322e] light:hover:bg-[#f0ebe0] transition-colors"
                     >
-                      Quick Play (Blitz)
+                      Play Blitz
                     </button>
                     <button
                       onClick={() => {
@@ -209,7 +209,7 @@ export function Navigation() {
                       }}
                       className="w-full px-4 py-2 text-left text-[#c1b9ad] light:text-[#4a453e] hover:bg-[#35322e] light:hover:bg-[#f0ebe0] transition-colors"
                     >
-                      Quick Play (Rapid)
+                      Play Rapid
                     </button>
                     <button
                       onClick={() => {
@@ -219,7 +219,7 @@ export function Navigation() {
                       }}
                       className="w-full px-4 py-2 text-left text-[#c1b9ad] light:text-[#4a453e] hover:bg-[#35322e] light:hover:bg-[#f0ebe0] transition-colors"
                     >
-                      Quick Play (Classical)
+                      Play Classical
                     </button>
                   </div>
                 </div>
@@ -365,7 +365,7 @@ export function Navigation() {
                     />
                     <div className="absolute right-0 w-48 bg-[#2a2926] light:bg-white border border-[#454038] light:border-[#d4caba] rounded-lg shadow-lg z-20 py-1">
                       <Link
-                        href={`/profile/${user.handle}`}
+                        href={user.id.startsWith('guest_') ? '/guest/profile' : `/profile/${user.handle}`}
                         onClick={() => setDropdownOpen(false)}
                         className="flex items-center space-x-2 px-4 py-2 text-[#c1b9ad] light:text-[#4a453e] hover:text-white light:hover:text-black hover:bg-[#33302c] light:hover:bg-[#f0ebe0] transition-colors"
                       >
@@ -542,7 +542,7 @@ export function Navigation() {
               <div className="space-y-6">
                 {/* User Profile */}
                 <Link
-                  href={`/profile/${user.handle}`}
+                  href={user.id.startsWith('guest_') ? '/guest/profile' : `/profile/${user.handle}`}
                   onClick={() => setIsOpen(false)}
                   className="flex items-center space-x-3 p-4 bg-[#35322e] light:bg-[#faf7f2] border border-[#474239] light:border-[#d4caba] rounded-lg hover:border-orange-300/50 hover:shadow-[0_0_20px_rgba(251,146,60,0.2)] hover:-translate-y-0.5 transition-all duration-200 group"
                   style={{

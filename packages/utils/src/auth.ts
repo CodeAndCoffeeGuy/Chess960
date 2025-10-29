@@ -10,6 +10,17 @@ export interface AuthPayload {
   exp?: number;
 }
 
+// Ghost user concept for anonymous users
+export const GHOST_USER_ID = 'ghost';
+export const GHOST_USERNAME = 'Anonymous';
+
+export type UserContext = {
+  isAuth: boolean;
+  userId?: string;
+  username?: string;
+  type?: 'guest' | 'user';
+};
+
 export interface MagicLinkPayload {
   email: string;
   iat?: number;
@@ -185,51 +196,12 @@ export function getAuthService(): AuthService {
 }
 
 // Client-side safe JWT verification for guest tokens
-export function verifyGuestTokenClientSide(token: string): { userId: string; type: string } | null {
+export function verifyGuestTokenClientSide(token: string): { userId: string; type: string; handle?: string; email?: string } | null {
   try {
     console.log('[DEBUG] verifyGuestTokenClientSide called with token:', token?.substring(0, 50) + '...');
     
     // Simple JWT decode without verification for client-side use
     // This is safe for guest tokens as they don't contain sensitive data
-    const parts = token.split('.');
-    console.log('[DEBUG] JWT parts count:', parts.length);
-    
-    if (parts.length !== 3) {
-      console.log('[DEBUG] Invalid JWT format - expected 3 parts, got:', parts.length);
-      return null;
-    }
-    
-    console.log('[DEBUG] Decoding payload part:', parts[1]);
-    const payload = JSON.parse(atob(parts[1]));
-    console.log('[DEBUG] Decoded payload:', payload);
-    
-    // Basic validation
-    if (!payload.userId || !payload.type || payload.type !== 'guest') {
-      console.log('[DEBUG] Payload validation failed:', {
-        hasUserId: !!payload.userId,
-        hasType: !!payload.type,
-        typeValue: payload.type,
-        expectedType: 'guest'
-      });
-      return null;
-    }
-    
-    console.log('[DEBUG] Token validation successful');
-    return {
-      userId: payload.userId,
-      type: payload.type
-    };
-  } catch (error) {
-    console.log('[DEBUG] Error in verifyGuestTokenClientSide:', error);
-    return null;
-  }
-}
-
-export function verifyTokenClientSide(token: string): { userId: string; type: string; handle?: string; email?: string } | null {
-  try {
-    console.log('[DEBUG] verifyTokenClientSide called with token:', token?.substring(0, 50) + '...');
-    
-    // Simple JWT decode without verification for client-side use
     const parts = token.split('.');
     console.log('[DEBUG] JWT parts count:', parts.length);
     
@@ -261,7 +233,78 @@ export function verifyTokenClientSide(token: string): { userId: string; type: st
       email: payload.email
     };
   } catch (error) {
+    console.log('[DEBUG] Error in verifyGuestTokenClientSide:', error);
+    return null;
+  }
+}
+
+export function verifyTokenClientSide(token: string): { userId: string; type: string; handle?: string; email?: string } | null {
+  try {
+    // Simple JWT decode without verification for client-side use
+    const parts = token.split('.');
+    
+    if (parts.length !== 3) {
+      return null;
+    }
+    
+    const payload = JSON.parse(atob(parts[1]));
+    
+    // Basic validation - accept both 'user' and 'guest' types
+    if (!payload.userId || !payload.type || (payload.type !== 'guest' && payload.type !== 'user')) {
+      return null;
+    }
+    return {
+      userId: payload.userId,
+      type: payload.type,
+      handle: payload.handle,
+      email: payload.email
+    };
+  } catch (error) {
     console.log('[DEBUG] Error in verifyTokenClientSide:', error);
     return null;
+  }
+}
+
+// Function to clear auth token cookie
+export function clearAuthToken(): void {
+  if (typeof document !== 'undefined') {
+    document.cookie = 'auth-token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+    console.log('[DEBUG] Auth token cookie cleared');
+  }
+}
+
+// Simple function to get user context from cookies
+export function getUserContextFromCookies(): UserContext {
+  if (typeof document === 'undefined') {
+    // Server-side or no document available
+    return { isAuth: false };
+  }
+
+  try {
+    const authToken = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('auth-token='))
+      ?.split('=')[1];
+
+
+    if (!authToken) {
+      return { isAuth: false };
+    }
+
+    const payload = verifyTokenClientSide(authToken);
+    
+    if (!payload) {
+      return { isAuth: false };
+    }
+
+    return {
+      isAuth: payload.type === 'user',
+      userId: payload.userId,
+      username: payload.handle || (payload.type === 'guest' ? GHOST_USERNAME : undefined),
+      type: payload.type
+    };
+  } catch (error) {
+    console.error('Error getting user context from cookies:', error);
+    return { isAuth: false };
   }
 }
