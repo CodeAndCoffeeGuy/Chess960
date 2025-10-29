@@ -57,12 +57,9 @@ export class AuthService {
       }
       
       return payload as AuthPayload;
-    } catch (error) {
-      // Avoid instanceof checks that can cause issues
-      const errorMessage = error && typeof error === 'object' && 'message' in error 
-        ? (error as Error).message 
-        : 'Unknown JWT verification error';
-      console.error('JWT verification failed:', errorMessage);
+    } catch {
+      // Avoid any error object access that could trigger instanceof checks
+      console.error('JWT verification failed: Invalid or expired token');
       return null;
     }
   }
@@ -94,12 +91,9 @@ export class AuthService {
       }
       
       return payload as MagicLinkPayload;
-    } catch (error) {
-      // Avoid instanceof checks that can cause issues
-      const errorMessage = error && typeof error === 'object' && 'message' in error 
-        ? (error as Error).message 
-        : 'Unknown magic link verification error';
-      console.error('Magic link verification failed:', errorMessage);
+    } catch {
+      // Avoid any error object access that could trigger instanceof checks
+      console.error('Magic link verification failed: Invalid or expired token');
       return null;
     }
   }
