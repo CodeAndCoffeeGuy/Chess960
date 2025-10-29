@@ -58,7 +58,11 @@ export class AuthService {
       
       return payload as AuthPayload;
     } catch (error) {
-      console.error('JWT verification failed:', error);
+      // Avoid instanceof checks that can cause issues
+      const errorMessage = error && typeof error === 'object' && 'message' in error 
+        ? (error as Error).message 
+        : 'Unknown JWT verification error';
+      console.error('JWT verification failed:', errorMessage);
       return null;
     }
   }
@@ -91,7 +95,11 @@ export class AuthService {
       
       return payload as MagicLinkPayload;
     } catch (error) {
-      console.error('Magic link verification failed:', error);
+      // Avoid instanceof checks that can cause issues
+      const errorMessage = error && typeof error === 'object' && 'message' in error 
+        ? (error as Error).message 
+        : 'Unknown magic link verification error';
+      console.error('Magic link verification failed:', errorMessage);
       return null;
     }
   }
