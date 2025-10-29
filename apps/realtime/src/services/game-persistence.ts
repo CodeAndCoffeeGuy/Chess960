@@ -2,6 +2,7 @@ import { db } from '@chess960/db';
 import { updateGlicko2, type GameResult } from '@chess960/rating';
 import { timeControlToDbEnum, timeControlToRatingCategory, type TimeControl } from '@chess960/proto';
 import type { GameState } from '../types';
+import { guestRatingManager } from './guest-rating-manager';
 
 export class GamePersistenceService {
   
@@ -23,14 +24,23 @@ export class GamePersistenceService {
       // Use speed-based rating category (BULLET, BLITZ, RAPID, CLASSICAL)
       const ratingTc = timeControlToRatingCategory(gameState.tc as any) as any;
 
-      // Get ratings before the game for both players, creating if they don't exist
+      // Get ratings before the game for both players
       const [whiteRating, blackRating] = await Promise.all([
         this.getOrCreateRating(gameState.whiteId, ratingTc),
         this.getOrCreateRating(gameState.blackId, ratingTc),
       ]);
 
-      const whiteRatingBefore = whiteRating ? Math.round(Number(whiteRating.rating)) : 1500;
-      const blackRatingBefore = blackRating ? Math.round(Number(blackRating.rating)) : 1500;
+      // Handle guest users
+      const isWhiteGuest = gameState.whiteId.startsWith('guest_');
+      const isBlackGuest = gameState.blackId.startsWith('guest_');
+
+      const whiteRatingBefore = isWhiteGuest 
+        ? guestRatingManager.getGuestRating(gameState.whiteId, ratingTc).rating
+        : (whiteRating ? Math.round(Number(whiteRating.rating)) : 1500);
+      
+      const blackRatingBefore = isBlackGuest 
+        ? guestRatingManager.getGuestRating(gameState.blackId, ratingTc).rating
+        : (blackRating ? Math.round(Number(blackRating.rating)) : 1500);
 
       // Create game record with initial ratings
       const game = await db.game.create({
@@ -73,6 +83,11 @@ export class GamePersistenceService {
       // Update ratings if it's a completed game (not abort)
       if (gameState.result !== 'abort' && this.isGameCompleted(gameState.result)) {
         await this.updatePlayerRatings(gameState, ratingTc, game.id);
+      }
+
+      // Update guest ratings and stats
+      if (gameState.result !== 'abort' && this.isGameCompleted(gameState.result)) {
+        this.updateGuestRatingsAndStats(gameState, ratingTc);
       }
 
       // Update user stats (games played, won, lost, drawn)
@@ -235,6 +250,102 @@ export class GamePersistenceService {
     return result !== 'abort' && result !== 'timeout-start';
   }
 
+  private updateGuestRatingsAndStats(gameState: GameState, tc: TimeControl): void {
+    try {
+      const { whiteResult, blackResult } = this.parseGameResult(gameState.result);
+      const isWhiteGuest = gameState.whiteId.startsWith('guest_');
+      const isBlackGuest = gameState.blackId.startsWith('guest_');
+
+      // Update guest ratings
+      if (isWhiteGuest && !isBlackGuest) {
+        // White is guest, black is registered user
+        const blackRating = this.getOrCreateRating(gameState.blackId, tc);
+        if (blackRating) {
+          const newWhiteRating = guestRatingManager.updateGuestRating(
+            gameState.whiteId,
+            tc,
+            {
+              rating: Number(blackRating.rating),
+              rd: Number(blackRating.rd),
+              vol: Number(blackRating.vol),
+            },
+            whiteResult
+          );
+          console.log(`Guest ${gameState.whiteId} rating updated: ${newWhiteRating.rating}`);
+        }
+      } else if (isBlackGuest && !isWhiteGuest) {
+        // Black is guest, white is registered user
+        const whiteRating = this.getOrCreateRating(gameState.whiteId, tc);
+        if (whiteRating) {
+          const newBlackRating = guestRatingManager.updateGuestRating(
+            gameState.blackId,
+            tc,
+            {
+              rating: Number(whiteRating.rating),
+              rd: Number(whiteRating.rd),
+              vol: Number(whiteRating.vol),
+            },
+            blackResult
+          );
+          console.log(`Guest ${gameState.blackId} rating updated: ${newBlackRating.rating}`);
+        }
+      } else if (isWhiteGuest && isBlackGuest) {
+        // Both are guests - use current ratings
+        const whiteCurrentRating = guestRatingManager.getGuestRating(gameState.whiteId, tc);
+        const blackCurrentRating = guestRatingManager.getGuestRating(gameState.blackId, tc);
+        
+        const newWhiteRating = guestRatingManager.updateGuestRating(
+          gameState.whiteId,
+          tc,
+          blackCurrentRating,
+          whiteResult
+        );
+        
+        const newBlackRating = guestRatingManager.updateGuestRating(
+          gameState.blackId,
+          tc,
+          whiteCurrentRating,
+          blackResult
+        );
+        
+        console.log(`Guest vs Guest ratings updated: White ${newWhiteRating.rating}, Black ${newBlackRating.rating}`);
+      }
+
+      // Update guest stats
+      if (isWhiteGuest) {
+        guestRatingManager.updateGuestStats(gameState.whiteId, whiteResult);
+      }
+      if (isBlackGuest) {
+        guestRatingManager.updateGuestStats(gameState.blackId, blackResult);
+      }
+
+      // Add game to guest history
+      if (isWhiteGuest) {
+        guestRatingManager.addGuestGame(gameState.whiteId, {
+          id: gameState.id,
+          tc: gameState.tc,
+          result: gameState.result,
+          opponent: gameState.blackId,
+          ratingBefore: whiteRatingBefore,
+          ratingAfter: isWhiteGuest ? guestRatingManager.getGuestRating(gameState.whiteId, tc).rating : undefined,
+        });
+      }
+      if (isBlackGuest) {
+        guestRatingManager.addGuestGame(gameState.blackId, {
+          id: gameState.id,
+          tc: gameState.tc,
+          result: gameState.result,
+          opponent: gameState.whiteId,
+          ratingBefore: blackRatingBefore,
+          ratingAfter: isBlackGuest ? guestRatingManager.getGuestRating(gameState.blackId, tc).rating : undefined,
+        });
+      }
+
+    } catch (error) {
+      console.error('Failed to update guest ratings and stats:', error);
+    }
+  }
+
   private async updateUserStats(gameState: GameState): Promise<void> {
     try {
       if (!gameState.result || gameState.result === 'abort') {
@@ -243,37 +354,60 @@ export class GamePersistenceService {
       }
 
       const { whiteResult, blackResult } = this.parseGameResult(gameState.result);
+      const isWhiteGuest = gameState.whiteId.startsWith('guest_');
+      const isBlackGuest = gameState.blackId.startsWith('guest_');
 
-      // Determine the stats update for each player
-      const getStatsUpdate = (result: GameResult) => {
-        if (result === 1) {
-          return { gamesWon: { increment: 1 } };
-        } else if (result === 0) {
-          return { gamesLost: { increment: 1 } };
-        } else {
-          return { gamesDrawn: { increment: 1 } };
-        }
-      };
+      // Only update database stats for registered users
+      const updates = [];
+      
+      if (!isWhiteGuest) {
+        const getStatsUpdate = (result: GameResult) => {
+          if (result === 1) {
+            return { gamesWon: { increment: 1 } };
+          } else if (result === 0) {
+            return { gamesLost: { increment: 1 } };
+          } else {
+            return { gamesDrawn: { increment: 1 } };
+          }
+        };
 
-      // Update both players' stats
-      await Promise.all([
-        db.user.update({
-          where: { id: gameState.whiteId },
-          data: {
-            gamesPlayed: { increment: 1 },
-            ...getStatsUpdate(whiteResult),
-          },
-        }),
-        db.user.update({
-          where: { id: gameState.blackId },
-          data: {
-            gamesPlayed: { increment: 1 },
-            ...getStatsUpdate(blackResult),
-          },
-        }),
-      ]);
+        updates.push(
+          db.user.update({
+            where: { id: gameState.whiteId },
+            data: {
+              gamesPlayed: { increment: 1 },
+              ...getStatsUpdate(whiteResult),
+            },
+          })
+        );
+      }
 
-      console.log(`User stats updated for game ${gameState.id}`);
+      if (!isBlackGuest) {
+        const getStatsUpdate = (result: GameResult) => {
+          if (result === 1) {
+            return { gamesWon: { increment: 1 } };
+          } else if (result === 0) {
+            return { gamesLost: { increment: 1 } };
+          } else {
+            return { gamesDrawn: { increment: 1 } };
+          }
+        };
+
+        updates.push(
+          db.user.update({
+            where: { id: gameState.blackId },
+            data: {
+              gamesPlayed: { increment: 1 },
+              ...getStatsUpdate(blackResult),
+            },
+          })
+        );
+      }
+
+      if (updates.length > 0) {
+        await Promise.all(updates);
+        console.log(`User stats updated for game ${gameState.id}`);
+      }
     } catch (error) {
       console.error('Failed to update user stats for game:', gameState.id, error);
     }

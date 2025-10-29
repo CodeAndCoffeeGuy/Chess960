@@ -2,7 +2,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Settings, Palette, Sun, Moon } from 'lucide-react';
+import { Settings, Palette, Sun, Moon, User } from 'lucide-react';
+import Link from 'next/link';
 
 export function GuestSettings() {
   const { boardTheme, setBoardTheme, boardThemes } = useTheme();
@@ -137,6 +138,23 @@ export function GuestSettings() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Profile Link */}
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2 text-[#c1b9ad] light:text-[#5a5449]">
+                <User className="w-4 h-4" />
+                <h3 className="text-sm font-medium">Profile</h3>
+              </div>
+              
+              <Link
+                href="/guest/profile"
+                className="flex items-center space-x-2 px-3 py-2 rounded-md border border-[#474239] light:border-[#d4caba] text-[#c1b9ad] light:text-[#5a5449] hover:border-[#5a5449] light:hover:border-[#a0958a] hover:text-white light:hover:text-black transition-all text-xs"
+                onClick={() => setIsOpen(false)}
+              >
+                <User className="w-3 h-3" />
+                <span>View Profile & Stats</span>
+              </Link>
             </div>
 
             {/* Footer */}

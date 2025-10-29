@@ -8,6 +8,7 @@ import { UserActivity } from '@/components/profile/UserActivity';
 import { GameHistory } from '@/components/profile/GameHistory';
 import { ChallengeButton } from '@/components/profile/ChallengeButton';
 import { RatingGraph } from '@/components/profile/RatingGraph';
+import { useProfileWebSocket } from '@/hooks/useProfileWebSocket';
 
 interface UserStats {
   id: string;
@@ -105,8 +106,9 @@ export default function ProfilePage() {
   const [error, setError] = useState('');
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
-  const [selectedTc, setSelectedTc] = useState<'1+0' | '2+0'>('1+0');
+  const [selectedSpeed, setSelectedSpeed] = useState<'bullet' | 'blitz' | 'rapid' | 'classical'>('bullet');
   const [showContent, setShowContent] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -119,6 +121,21 @@ export default function ProfilePage() {
       checkFollowStatus();
     }
   }, [stats?.id, session?.user]);
+
+  // Real-time updates for profile data
+  const handleProfileUpdate = (update: any) => {
+    console.log('[PROFILE] Received update:', update);
+    
+    if (update.type === 'game_ended' || update.type === 'rating_updated' || update.type === 'stats_updated') {
+      // Refresh the profile data
+      fetchUserStats();
+      // Force refresh of child components
+      setRefreshKey(prev => prev + 1);
+    }
+  };
+
+  // Set up WebSocket connection for real-time updates
+  useProfileWebSocket(stats?.id || '', handleProfileUpdate);
 
   const fetchUserStats = async () => {
     try {
@@ -319,32 +336,97 @@ export default function ProfilePage() {
         <div className="bg-[#35322e]/50 light:bg-white/50 backdrop-blur-sm rounded-2xl border border-[#474239] light:border-[#d4caba] mb-4 sm:mb-6 md:mb-8">
           {/* Rating Display */}
           <div className="p-4 sm:p-5 md:p-6">
-            {/* Time Control Selector */}
-            <div className="flex gap-2 mb-4">
-              <button
-                onClick={() => setSelectedTc('1+0')}
-                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                  selectedTc === '1+0'
-                    ? 'bg-orange-400 text-white'
-                    : 'bg-[#474239] light:bg-[#d4caba] text-[#a0958a] light:text-[#5a5449] hover:bg-[#5a5449] light:hover:bg-[#a0958a]'
-                }`}
-              >
-                Bullet
-              </button>
-              <button
-                onClick={() => setSelectedTc('2+0')}
-                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                  selectedTc === '2+0'
-                    ? 'bg-orange-400 text-white'
-                    : 'bg-[#474239] light:bg-[#d4caba] text-[#a0958a] light:text-[#5a5449] hover:bg-[#5a5449] light:hover:bg-[#a0958a]'
-                }`}
-              >
-                Blitz
-              </button>
+            {/* Speed Category Selector */}
+            <div className="flex gap-2 mb-6 flex-wrap">
+              {[
+                { key: 'bullet', label: 'Bullet', color: 'text-yellow-500', bgColor: 'bg-yellow-500/20', borderColor: 'border-yellow-500/30' },
+                { key: 'blitz', label: 'Blitz', color: 'text-orange-300', bgColor: 'bg-orange-500/20', borderColor: 'border-orange-500/30' },
+                { key: 'rapid', label: 'Rapid', color: 'text-green-500', bgColor: 'bg-green-500/20', borderColor: 'border-green-500/30' },
+                { key: 'classical', label: 'Classical', color: 'text-blue-500', bgColor: 'bg-blue-500/20', borderColor: 'border-blue-500/30' }
+              ].map(({ key, label, color, bgColor, borderColor }) => (
+                <button
+                  key={key}
+                  onClick={() => setSelectedSpeed(key as any)}
+                  className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 border ${
+                    selectedSpeed === key
+                      ? 'bg-orange-400 text-white shadow-lg border-orange-400 transform scale-105'
+                      : `bg-[#474239] light:bg-[#d4caba] text-[#a0958a] light:text-[#5a5449] hover:bg-[#5a5449] light:hover:bg-[#a0958a] hover:shadow-md border-[#474239] light:border-[#d4caba] hover:${bgColor} hover:${borderColor}`
+                  }`}
+                >
+                  <span className={`${selectedSpeed === key ? 'text-white' : color} font-semibold flex items-center gap-2`}>
+                    <div className={`w-2 h-2 rounded-full ${selectedSpeed === key ? 'bg-white' : 'bg-current'}`}></div>
+                    {label}
+                  </span>
+                </button>
+              ))}
             </div>
             
+            {/* Speed Category Info */}
+            <div className="mb-4 p-3 bg-[#2a2723] light:bg-[#f5f1ea] rounded-lg border border-[#474239] light:border-[#d4caba]">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-white light:text-black font-semibold capitalize">{selectedSpeed} Games</h4>
+                  <p className="text-xs text-[#a0958a] light:text-[#5a5449]">
+                    {selectedSpeed === 'bullet' && '1+0, 2+0, 2+1 (under 3 minutes)'}
+                    {selectedSpeed === 'blitz' && '3+0, 3+2, 5+0, 5+3 (3-8 minutes)'}
+                    {selectedSpeed === 'rapid' && '10+0, 10+5, 15+0, 15+10 (8-25 minutes)'}
+                    {selectedSpeed === 'classical' && '30+0, 30+20, 60+0 (25+ minutes)'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm text-[#a0958a] light:text-[#5a5449]">Time Controls</div>
+                  <div className="text-xs text-white light:text-black font-mono">
+                    {selectedSpeed === 'bullet' && '1+0, 2+0, 2+1'}
+                    {selectedSpeed === 'blitz' && '3+0, 3+2, 5+0, 5+3'}
+                    {selectedSpeed === 'rapid' && '10+0, 10+5, 15+0, 15+10'}
+                    {selectedSpeed === 'classical' && '30+0, 30+20, 60+0'}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Current Rating Display */}
+            <div className="mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-[#2a2723] light:bg-[#f5f1ea] rounded-lg p-4 border border-[#474239] light:border-[#d4caba]">
+                  <div className="text-xs text-[#a0958a] light:text-[#5a5449] mb-1">Current Rating</div>
+                  <div className="text-2xl font-bold text-white light:text-black">
+                    {stats.ratings.find(r => {
+                      const speedMap = {
+                        bullet: ['1+0', '2+0', '2+1'],
+                        blitz: ['3+0', '3+2', '5+0', '5+3'],
+                        rapid: ['10+0', '10+5', '15+0', '15+10'],
+                        classical: ['30+0', '30+20', '60+0']
+                      };
+                      return speedMap[selectedSpeed]?.includes(r.tc);
+                    })?.rating || 'N/A'}
+                  </div>
+                </div>
+                <div className="bg-[#2a2723] light:bg-[#f5f1ea] rounded-lg p-4 border border-[#474239] light:border-[#d4caba]">
+                  <div className="text-xs text-[#a0958a] light:text-[#5a5449] mb-1">Rating Deviation</div>
+                  <div className="text-2xl font-bold text-orange-400">
+                    {stats.ratings.find(r => {
+                      const speedMap = {
+                        bullet: ['1+0', '2+0', '2+1'],
+                        blitz: ['3+0', '3+2', '5+0', '5+3'],
+                        rapid: ['10+0', '10+5', '15+0', '15+10'],
+                        classical: ['30+0', '30+20', '60+0']
+                      };
+                      return speedMap[selectedSpeed]?.includes(r.tc);
+                    })?.rd || 'N/A'}
+                  </div>
+                </div>
+                <div className="bg-[#2a2723] light:bg-[#f5f1ea] rounded-lg p-4 border border-[#474239] light:border-[#d4caba]">
+                  <div className="text-xs text-[#a0958a] light:text-[#5a5449] mb-1">Games Played</div>
+                  <div className="text-2xl font-bold text-white light:text-black">
+                    {stats.gamesPlayed}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Rating Graph */}
-            <RatingGraph username={stats.handle} tc={selectedTc} />
+            <RatingGraph key={`rating-${refreshKey}`} username={stats.handle} speed={selectedSpeed} />
           </div>
         </div>
 
@@ -378,11 +460,11 @@ export default function ProfilePage() {
 
         {/* Game History */}
         <div className="mb-4 sm:mb-6 md:mb-8">
-          <GameHistory userId={stats.id} username={stats.handle} />
+          <GameHistory key={`history-${refreshKey}`} userId={stats.id} username={stats.handle} />
         </div>
 
         {/* Recent Activity */}
-        <UserActivity handle={username} userId={stats.id} />
+        <UserActivity key={`activity-${refreshKey}`} handle={username} userId={stats.id} />
       </div>
     </div>
   );

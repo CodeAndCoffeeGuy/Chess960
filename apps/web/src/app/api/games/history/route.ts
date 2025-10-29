@@ -49,7 +49,21 @@ export async function GET(request: NextRequest) {
 
     const formattedGames = games.map(game => ({
       id: game.id,
-      tc: game.tc === 'ONE_PLUS_ZERO' ? '1+0' : '2+0',
+      tc: game.tc === 'ONE_PLUS_ZERO' ? '1+0' : 
+          game.tc === 'TWO_PLUS_ZERO' ? '2+0' :
+          game.tc === 'TWO_PLUS_ONE' ? '2+1' :
+          game.tc === 'THREE_PLUS_ZERO' ? '3+0' :
+          game.tc === 'THREE_PLUS_TWO' ? '3+2' :
+          game.tc === 'FIVE_PLUS_ZERO' ? '5+0' :
+          game.tc === 'FIVE_PLUS_THREE' ? '5+3' :
+          game.tc === 'TEN_PLUS_ZERO' ? '10+0' :
+          game.tc === 'TEN_PLUS_FIVE' ? '10+5' :
+          game.tc === 'FIFTEEN_PLUS_ZERO' ? '15+0' :
+          game.tc === 'FIFTEEN_PLUS_TEN' ? '15+10' :
+          game.tc === 'THIRTY_PLUS_ZERO' ? '30+0' :
+          game.tc === 'THIRTY_PLUS_TWENTY' ? '30+20' :
+          game.tc === 'SIXTY_PLUS_ZERO' ? '60+0' :
+          game.tc, // Fallback to original value
       result: game.result || 'unknown',
       rated: game.rated,
       startedAt: game.startedAt?.toISOString() || new Date().toISOString(),

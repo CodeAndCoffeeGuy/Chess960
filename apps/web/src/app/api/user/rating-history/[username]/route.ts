@@ -8,7 +8,7 @@ export async function GET(
   try {
     const { username } = await params;
     const { searchParams } = new URL(request.url);
-    const tc = searchParams.get('tc') || 'bullet'; // Default to bullet (unified rating)
+    const speed = searchParams.get('speed') || 'bullet'; // Default to bullet
 
     const user = await prisma.user.findUnique({
       where: { handle: username },
@@ -19,23 +19,23 @@ export async function GET(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Map time control parameter to database values
-    const getTimeControlFilter = (tc: string) => {
-      switch (tc.toLowerCase()) {
+    // Map speed category to database time control values
+    const getTimeControlFilter = (speed: string) => {
+      switch (speed.toLowerCase()) {
         case 'bullet':
-          return ['ONE_PLUS_ZERO', 'TWO_PLUS_ZERO'];
+          return ['ONE_PLUS_ZERO', 'TWO_PLUS_ZERO', 'TWO_PLUS_ONE'];
         case 'blitz':
-          return ['THREE_PLUS_ZERO', 'FIVE_PLUS_ZERO'];
+          return ['THREE_PLUS_ZERO', 'THREE_PLUS_TWO', 'FIVE_PLUS_ZERO', 'FIVE_PLUS_THREE'];
         case 'rapid':
-          return ['TEN_PLUS_ZERO', 'FIFTEEN_PLUS_TEN'];
+          return ['TEN_PLUS_ZERO', 'TEN_PLUS_FIVE', 'FIFTEEN_PLUS_ZERO', 'FIFTEEN_PLUS_TEN'];
         case 'classical':
-          return ['THIRTY_PLUS_ZERO', 'SIXTY_PLUS_ZERO'];
+          return ['THIRTY_PLUS_ZERO', 'THIRTY_PLUS_TWENTY', 'SIXTY_PLUS_ZERO'];
         default:
-          return ['ONE_PLUS_ZERO', 'TWO_PLUS_ZERO']; // Default to bullet
+          return ['ONE_PLUS_ZERO', 'TWO_PLUS_ZERO', 'TWO_PLUS_ONE']; // Default to bullet
       }
     };
 
-    const timeControls = getTimeControlFilter(tc);
+    const timeControls = getTimeControlFilter(speed);
 
     // Get games for the specified time control
     const games = await prisma.game.findMany({
@@ -73,31 +73,59 @@ export async function GET(
       };
     }).filter(point => point.rating !== null);
 
-    // Get current rating for the specified time control
-    const currentRating = await prisma.rating.findUnique({
+    // Get current rating for the specified speed category
+    // Try to find the most recent rating for any time control in this speed category
+    const currentRating = await prisma.rating.findFirst({
       where: {
-        userId_tc_variant: {
-          userId: user.id,
-          tc: timeControls[0] as any, // Use first time control from the filter
-          variant: 'CHESS960',
+        userId: user.id,
+        tc: {
+          in: timeControls,
         },
+        variant: 'CHESS960',
       },
       select: {
         rating: true,
         rd: true,
+        tc: true,
+        updatedAt: true,
+      },
+      orderBy: {
+        updatedAt: 'desc',
       },
     });
 
+    // If no rating found, try to get the most recent rating from any time control
+    let fallbackRating = null;
+    if (!currentRating) {
+      fallbackRating = await prisma.rating.findFirst({
+        where: {
+          userId: user.id,
+          variant: 'CHESS960',
+        },
+        select: {
+          rating: true,
+          rd: true,
+          tc: true,
+          updatedAt: true,
+        },
+        orderBy: {
+          updatedAt: 'desc',
+        },
+      });
+    }
+
+    const finalRating = currentRating || fallbackRating;
+
     return NextResponse.json({
       history: ratingHistory,
-      current: currentRating ? {
-        rating: currentRating.rating,
-        rd: currentRating.rd,
+      current: finalRating ? {
+        rating: Number(finalRating.rating),
+        rd: Number(finalRating.rd),
       } : {
         rating: 1500,
         rd: 350,
       },
-      tc: 'bullet',
+      speed: speed,
     });
   } catch (error) {
     console.error('Fetch rating history error:', error);

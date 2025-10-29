@@ -46,6 +46,7 @@ export function GameHistory({ userId, username: _username }: GameHistoryProps) {
   const [resultFilter, setResultFilter] = useState<ResultFilter>('all');
   const [opponentSearch, setOpponentSearch] = useState('');
   const [openingSearch, setOpeningSearch] = useState('');
+  const [speedFilter, setSpeedFilter] = useState<'all' | 'bullet' | 'blitz' | 'rapid' | 'classical'>('all');
 
   useEffect(() => {
     loadGames();
@@ -106,6 +107,19 @@ export function GameHistory({ userId, username: _username }: GameHistoryProps) {
       });
     }
 
+    // Filter by speed category
+    if (speedFilter !== 'all') {
+      filtered = filtered.filter(game => {
+        const speedMap = {
+          bullet: ['1+0', '2+0', '2+1'],
+          blitz: ['3+0', '3+2', '5+0', '5+3'],
+          rapid: ['10+0', '10+5', '15+0', '15+10'],
+          classical: ['30+0', '30+20', '60+0']
+        };
+        return speedMap[speedFilter]?.includes(game.tc);
+      });
+    }
+
     // Filter by opponent
     if (opponentSearch) {
       filtered = filtered.filter(game => {
@@ -127,7 +141,7 @@ export function GameHistory({ userId, username: _username }: GameHistoryProps) {
     }
 
     setFilteredGames(filtered);
-  }, [games, resultFilter, opponentSearch, openingSearch]);
+  }, [games, resultFilter, speedFilter, opponentSearch, openingSearch]);
 
   // Helper functions - defined before use
   const getGameResult = (game: Game) => {
@@ -154,11 +168,12 @@ export function GameHistory({ userId, username: _username }: GameHistoryProps) {
 
   const clearFilters = () => {
     setResultFilter('all');
+    setSpeedFilter('all');
     setOpponentSearch('');
     setOpeningSearch('');
   };
 
-  const hasActiveFilters = resultFilter !== 'all' || opponentSearch || openingSearch;
+  const hasActiveFilters = resultFilter !== 'all' || speedFilter !== 'all' || opponentSearch || openingSearch;
 
   const getFilterStats = () => {
     const wins = games.filter(g => getGameResult(g) === 'WIN').length;
@@ -252,7 +267,7 @@ export function GameHistory({ userId, username: _username }: GameHistoryProps) {
             <span className="text-sm font-semibold">Filter</span>
             {hasActiveFilters && (
               <span className="bg-orange-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
-                {[resultFilter !== 'all', opponentSearch, openingSearch].filter(Boolean).length}
+                {[resultFilter !== 'all', speedFilter !== 'all', opponentSearch, openingSearch].filter(Boolean).length}
               </span>
             )}
           </button>
@@ -292,6 +307,26 @@ export function GameHistory({ userId, username: _username }: GameHistoryProps) {
                   onClick={() => setResultFilter(filter)}
                   className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
                     resultFilter === filter
+                      ? 'bg-orange-600 text-white'
+                      : 'bg-[#2a2723] light:bg-white text-[#a0958a] light:text-[#5a5449] hover:text-orange-500 border border-[#474239] light:border-[#d4caba]'
+                  }`}
+                >
+                  {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Speed Filter */}
+          <div>
+            <label className="text-xs font-semibold text-[#a0958a] light:text-[#5a5449] mb-2 block">Speed Category</label>
+            <div className="flex space-x-2">
+              {(['all', 'bullet', 'blitz', 'rapid', 'classical'] as const).map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setSpeedFilter(filter)}
+                  className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
+                    speedFilter === filter
                       ? 'bg-orange-600 text-white'
                       : 'bg-[#2a2723] light:bg-white text-[#a0958a] light:text-[#5a5449] hover:text-orange-500 border border-[#474239] light:border-[#d4caba]'
                   }`}

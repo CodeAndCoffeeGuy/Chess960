@@ -11,22 +11,22 @@ interface RatingPoint {
 
 interface RatingGraphProps {
   username: string;
-  tc: string;
+  speed: 'bullet' | 'blitz' | 'rapid' | 'classical';
 }
 
-export function RatingGraph({ username, tc }: RatingGraphProps) {
+export function RatingGraph({ username, speed }: RatingGraphProps) {
   const [history, setHistory] = useState<RatingPoint[]>([]);
   const [current, setCurrent] = useState<{ rating: number; rd: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadRatingHistory();
-  }, [username, tc]);
+  }, [username, speed]);
 
   const loadRatingHistory = async () => {
     try {
-      // Always use 'bullet' for unified rating system
-      const response = await fetch(`/api/user/rating-history/${username}?tc=bullet`);
+      setLoading(true);
+      const response = await fetch(`/api/user/rating-history/${username}?speed=${speed}`);
       if (!response.ok) throw new Error('Failed to load rating history');
 
       const data = await response.json();
@@ -34,6 +34,8 @@ export function RatingGraph({ username, tc }: RatingGraphProps) {
       setCurrent(data.current);
     } catch (error) {
       console.error('Error loading rating history:', error);
+      setHistory([]);
+      setCurrent(null);
     } finally {
       setLoading(false);
     }
@@ -41,16 +43,37 @@ export function RatingGraph({ username, tc }: RatingGraphProps) {
 
   if (loading) {
     return (
-      <div className="h-64 opacity-0"></div>
+      <div className="bg-[#2a2723] light:bg-[#f5f1ea] border border-[#474239] light:border-[#d4caba] rounded-lg p-8 text-center">
+        <div className="animate-pulse">
+          <div className="h-4 bg-[#474239] light:bg-[#d4caba] rounded w-1/3 mx-auto mb-4"></div>
+          <div className="h-32 bg-[#474239] light:bg-[#d4caba] rounded mb-4"></div>
+          <div className="flex justify-center space-x-4">
+            <div className="h-3 bg-[#474239] light:bg-[#d4caba] rounded w-16"></div>
+            <div className="h-3 bg-[#474239] light:bg-[#d4caba] rounded w-16"></div>
+            <div className="h-3 bg-[#474239] light:bg-[#d4caba] rounded w-16"></div>
+          </div>
+        </div>
+      </div>
     );
   }
 
   if (history.length === 0) {
+    const speedLabels = {
+      bullet: 'Bullet',
+      blitz: 'Blitz', 
+      rapid: 'Rapid',
+      classical: 'Classical'
+    };
+    
     return (
       <div className="bg-[#2a2723] light:bg-[#f5f1ea] border border-[#474239] light:border-[#d4caba] rounded-lg p-8 text-center">
         <TrendingUp className="w-12 h-12 text-[#a0958a] mx-auto mb-3" />
-        <h3 className="text-white light:text-black font-semibold text-lg mb-2">No rating history yet</h3>
-        <p className="text-[#a0958a] light:text-[#5a5449] text-sm">Play more games to see your rating progression</p>
+        <h3 className="text-white light:text-black font-semibold text-lg mb-2">
+          No {speedLabels[speed]} rating history yet
+        </h3>
+        <p className="text-[#a0958a] light:text-[#5a5449] text-sm">
+          Play {speedLabels[speed].toLowerCase()} games to see your rating progression
+        </p>
       </div>
     );
   }
@@ -107,7 +130,9 @@ export function RatingGraph({ username, tc }: RatingGraphProps) {
     <div className="bg-[#2a2723] light:bg-[#f5f1ea] border border-[#474239] light:border-[#d4caba] rounded-lg p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-white light:text-black font-semibold text-lg">Rating Progression</h3>
+          <h3 className="text-white light:text-black font-semibold text-lg capitalize">
+            {speed} Rating Progression
+          </h3>
           <p className="text-[#a0958a] light:text-[#5a5449] text-sm mt-1">{history.length} games</p>
         </div>
         <div className="text-right">
