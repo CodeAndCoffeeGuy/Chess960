@@ -14,11 +14,41 @@ export default function GuestProfilePage() {
     checkGuestStatus();
   }, []);
 
-  const checkGuestStatus = () => {
+  const checkGuestStatus = async () => {
     try {
-      const authToken = document.cookie.split('; ').find(row => row.startsWith('auth-token='))?.split('=')[1];
+      let authToken = document.cookie.split('; ').find(row => row.startsWith('auth-token='))?.split('=')[1];
       
+      // If no token exists, create a guest token
       if (!authToken) {
+        console.log('No guest token found, creating one...');
+        try {
+          const response = await fetch('/api/auth/guest-simple', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Guest token created:', data);
+            // The cookie should be set by the response
+            // Re-check for the token
+            authToken = document.cookie.split('; ').find(row => row.startsWith('auth-token='))?.split('=')[1];
+          } else {
+            console.error('Failed to create guest token');
+            router.push('/');
+            return;
+          }
+        } catch (error) {
+          console.error('Error creating guest token:', error);
+          router.push('/');
+          return;
+        }
+      }
+
+      if (!authToken) {
+        console.error('Still no auth token after creation attempt');
         router.push('/');
         return;
       }
@@ -26,10 +56,12 @@ export default function GuestProfilePage() {
       const payload = verifyGuestTokenClientSide(authToken);
 
       if (!payload || !payload.userId || payload.type !== 'guest') {
+        console.error('Invalid guest token payload:', payload);
         router.push('/');
         return;
       }
 
+      console.log('Guest token validated successfully:', payload);
       setIsGuest(true);
     } catch (error) {
       console.error('Error checking guest status:', error);
