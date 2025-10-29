@@ -1,6 +1,7 @@
 export { RedisClient, getRedisClient } from './redis-client';
 export { AuthService, getAuthService, type AuthPayload, type MagicLinkPayload } from './auth';
-export { EmailService, getEmailService, type MagicLinkEmailData, type VerificationEmailData } from './email';
+// Email service is not exported by default to avoid bundling resend dependency
+// export { EmailService, getEmailService, type MagicLinkEmailData, type VerificationEmailData } from './email';
 export {
   generateRandomPosition,
   positionToBackRank,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuthService, getEmailService } from '@chess960/utils';
+import { getAuthService } from '@chess960/utils';
+import { getEmailService } from '@chess960/utils/dist/email';
 import { db } from '@chess960/db';
 import { z } from 'zod';
 
