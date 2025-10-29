@@ -267,15 +267,14 @@ export function verifyTokenClientSide(token: string): { userId: string; type: st
 
 // Function to clear auth token cookie
 export function clearAuthToken(): void {
-  if (typeof document !== 'undefined') {
+  if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     document.cookie = 'auth-token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
-    console.log('[DEBUG] Auth token cookie cleared');
   }
 }
 
 // Simple function to get user context from cookies
 export function getUserContextFromCookies(): UserContext {
-  if (typeof document === 'undefined') {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
     // Server-side or no document available
     return { isAuth: false };
   }
@@ -283,9 +282,8 @@ export function getUserContextFromCookies(): UserContext {
   try {
     const authToken = document.cookie
       .split('; ')
-      .find(row => row.startsWith('auth-token='))
+      .find((row: string) => row.startsWith('auth-token='))
       ?.split('=')[1];
-
 
     if (!authToken) {
       return { isAuth: false };
@@ -301,7 +299,7 @@ export function getUserContextFromCookies(): UserContext {
       isAuth: payload.type === 'user',
       userId: payload.userId,
       username: payload.handle || (payload.type === 'guest' ? GHOST_USERNAME : undefined),
-      type: payload.type
+      type: payload.type as 'user' | 'guest'
     };
   } catch (error) {
     console.error('Error getting user context from cookies:', error);
