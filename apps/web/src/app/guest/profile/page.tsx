@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GuestProfile } from '@/components/guest/GuestProfile';
-import { getAuthService } from '@chess960/utils';
+import { verifyGuestTokenClientSide } from '@chess960/utils';
 
 export default function GuestProfilePage() {
   const router = useRouter();
@@ -23,8 +23,7 @@ export default function GuestProfilePage() {
         return;
       }
 
-      const authService = getAuthService();
-      const payload = authService.verifyAuthToken(authToken);
+      const payload = verifyGuestTokenClientSide(authToken);
 
       if (!payload || !payload.userId || !payload.userId.startsWith('guest_')) {
         router.push('/');

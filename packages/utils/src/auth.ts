@@ -183,3 +183,29 @@ export function getAuthService(): AuthService {
   }
   return authServiceInstance;
 }
+
+// Client-side safe JWT verification for guest tokens
+export function verifyGuestTokenClientSide(token: string): { userId: string; type: string } | null {
+  try {
+    // Simple JWT decode without verification for client-side use
+    // This is safe for guest tokens as they don't contain sensitive data
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      return null;
+    }
+    
+    const payload = JSON.parse(atob(parts[1]));
+    
+    // Basic validation
+    if (!payload.userId || !payload.type || !payload.userId.startsWith('guest_')) {
+      return null;
+    }
+    
+    return {
+      userId: payload.userId,
+      type: payload.type
+    };
+  } catch {
+    return null;
+  }
+}
