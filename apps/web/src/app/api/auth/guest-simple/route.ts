@@ -9,7 +9,11 @@ export async function POST() {
     
     // Generate guest token
     const token = authService.generateGuestToken();
+    console.log('[DEBUG] Generated guest token:', token?.substring(0, 50) + '...');
+    console.log('[DEBUG] Token length:', token?.length);
+    
     const payload = authService.verifyAuthToken(token);
+    console.log('[DEBUG] Verified payload:', payload);
     
     if (!payload) {
       console.error('Failed to verify generated guest token');

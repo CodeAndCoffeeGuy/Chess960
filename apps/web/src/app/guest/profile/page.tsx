@@ -16,7 +16,9 @@ export default function GuestProfilePage() {
 
   const checkGuestStatus = async () => {
     try {
+      console.log('[DEBUG] All cookies:', document.cookie);
       let authToken = document.cookie.split('; ').find(row => row.startsWith('auth-token='))?.split('=')[1];
+      console.log('[DEBUG] Extracted auth token:', authToken);
       
       // If no token exists, create a guest token
       if (!authToken) {
@@ -33,8 +35,10 @@ export default function GuestProfilePage() {
             const data = await response.json();
             console.log('Guest token created:', data);
             // The cookie should be set by the response
-            // Re-check for the token
+            // Wait a moment for the cookie to be set, then re-check for the token
+            await new Promise(resolve => setTimeout(resolve, 100));
             authToken = document.cookie.split('; ').find(row => row.startsWith('auth-token='))?.split('=')[1];
+            console.log('Auth token after API call and delay:', authToken);
           } else {
             console.error('Failed to create guest token');
             router.push('/');
@@ -53,7 +57,12 @@ export default function GuestProfilePage() {
         return;
       }
 
+      console.log('Auth token found:', authToken);
+      console.log('Token length:', authToken?.length);
+      console.log('Token preview:', authToken?.substring(0, 50) + '...');
+      
       const payload = verifyGuestTokenClientSide(authToken);
+      console.log('Parsed payload:', payload);
 
       if (!payload || !payload.userId || payload.type !== 'guest') {
         console.error('Invalid guest token payload:', payload);
