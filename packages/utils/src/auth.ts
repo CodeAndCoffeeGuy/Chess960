@@ -41,7 +41,22 @@ export class AuthService {
   // Verify and decode JWT token
   verifyAuthToken(token: string): AuthPayload | null {
     try {
-      return jwt.verify(token, this.jwtSecret) as AuthPayload;
+      const decoded = jwt.verify(token, this.jwtSecret);
+      
+      // Ensure we have an object and not a string
+      if (typeof decoded === 'string' || !decoded || typeof decoded !== 'object') {
+        console.error('JWT verification failed: Invalid token format');
+        return null;
+      }
+      
+      // Type guard to ensure we have the required properties
+      const payload = decoded as any;
+      if (!payload.userId || !payload.type) {
+        console.error('JWT verification failed: Missing required properties');
+        return null;
+      }
+      
+      return payload as AuthPayload;
     } catch (error) {
       console.error('JWT verification failed:', error);
       return null;
@@ -59,7 +74,22 @@ export class AuthService {
   // Verify magic link token
   verifyMagicLinkToken(token: string): MagicLinkPayload | null {
     try {
-      return jwt.verify(token, this.magicLinkSecret) as MagicLinkPayload;
+      const decoded = jwt.verify(token, this.magicLinkSecret);
+      
+      // Ensure we have an object and not a string
+      if (typeof decoded === 'string' || !decoded || typeof decoded !== 'object') {
+        console.error('Magic link verification failed: Invalid token format');
+        return null;
+      }
+      
+      // Type guard to ensure we have the required properties
+      const payload = decoded as any;
+      if (!payload.email) {
+        console.error('Magic link verification failed: Missing email property');
+        return null;
+      }
+      
+      return payload as MagicLinkPayload;
     } catch (error) {
       console.error('Magic link verification failed:', error);
       return null;
