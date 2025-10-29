@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GuestProfile } from '@/components/guest/GuestProfile';
-import { verifyGuestTokenClientSide } from '@chess960/utils';
+import { verifyTokenClientSide } from '@chess960/utils';
 
 export default function GuestProfilePage() {
   const router = useRouter();
@@ -61,11 +61,25 @@ export default function GuestProfilePage() {
       console.log('Token length:', authToken?.length);
       console.log('Token preview:', authToken?.substring(0, 50) + '...');
       
-      const payload = verifyGuestTokenClientSide(authToken);
+      const payload = verifyTokenClientSide(authToken);
       console.log('Parsed payload:', payload);
 
-      if (!payload || !payload.userId || payload.type !== 'guest') {
-        console.error('Invalid guest token payload:', payload);
+      if (!payload || !payload.userId) {
+        console.error('Invalid token payload:', payload);
+        router.push('/');
+        return;
+      }
+
+      // If user has a regular user account, redirect them to their user profile
+      if (payload.type === 'user') {
+        console.log('Regular user detected, redirecting to user profile');
+        router.push('/profile');
+        return;
+      }
+
+      // Only allow guest users to access this page
+      if (payload.type !== 'guest') {
+        console.error('Invalid user type for guest profile:', payload.type);
         router.push('/');
         return;
       }

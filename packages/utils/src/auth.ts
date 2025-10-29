@@ -224,3 +224,44 @@ export function verifyGuestTokenClientSide(token: string): { userId: string; typ
     return null;
   }
 }
+
+export function verifyTokenClientSide(token: string): { userId: string; type: string; handle?: string; email?: string } | null {
+  try {
+    console.log('[DEBUG] verifyTokenClientSide called with token:', token?.substring(0, 50) + '...');
+    
+    // Simple JWT decode without verification for client-side use
+    const parts = token.split('.');
+    console.log('[DEBUG] JWT parts count:', parts.length);
+    
+    if (parts.length !== 3) {
+      console.log('[DEBUG] Invalid JWT format - expected 3 parts, got:', parts.length);
+      return null;
+    }
+    
+    console.log('[DEBUG] Decoding payload part:', parts[1]);
+    const payload = JSON.parse(atob(parts[1]));
+    console.log('[DEBUG] Decoded payload:', payload);
+    
+    // Basic validation - accept both 'user' and 'guest' types
+    if (!payload.userId || !payload.type || (payload.type !== 'guest' && payload.type !== 'user')) {
+      console.log('[DEBUG] Payload validation failed:', {
+        hasUserId: !!payload.userId,
+        hasType: !!payload.type,
+        typeValue: payload.type,
+        expectedTypes: ['guest', 'user']
+      });
+      return null;
+    }
+    
+    console.log('[DEBUG] Token validation successful');
+    return {
+      userId: payload.userId,
+      type: payload.type,
+      handle: payload.handle,
+      email: payload.email
+    };
+  } catch (error) {
+    console.log('[DEBUG] Error in verifyTokenClientSide:', error);
+    return null;
+  }
+}
