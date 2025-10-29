@@ -179,7 +179,7 @@ export function Navigation() {
               </button>
 
               {playDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 w-48 bg-[#2a2720] light:bg-[#f5f1ea] rounded-lg shadow-xl border border-[#474239] light:border-[#d4caba] z-50">
+                <div className="absolute top-full left-0 w-48 bg-[#2a2720] light:bg-[#f5f1ea] rounded-lg shadow-xl border border-[#474239] light:border-[#d4caba] z-50">
                   <div className="py-2">
                     <button
                       onClick={() => {
@@ -363,7 +363,7 @@ export function Navigation() {
                       className="fixed inset-0 z-10"
                       onClick={() => setDropdownOpen(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-48 bg-[#2a2926] light:bg-white border border-[#454038] light:border-[#d4caba] rounded-lg shadow-lg z-20 py-1">
+                    <div className="absolute right-0 w-48 bg-[#2a2926] light:bg-white border border-[#454038] light:border-[#d4caba] rounded-lg shadow-lg z-20 py-1">
                       <Link
                         href={`/profile/${user.handle}`}
                         onClick={() => setDropdownOpen(false)}
