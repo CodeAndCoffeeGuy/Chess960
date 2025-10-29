@@ -197,7 +197,7 @@ export function verifyGuestTokenClientSide(token: string): { userId: string; typ
     const payload = JSON.parse(atob(parts[1]));
     
     // Basic validation
-    if (!payload.userId || !payload.type || !payload.userId.startsWith('guest_')) {
+    if (!payload.userId || !payload.type || payload.type !== 'guest') {
       return null;
     }
     

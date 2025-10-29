@@ -25,7 +25,7 @@ export default function GuestProfilePage() {
 
       const payload = verifyGuestTokenClientSide(authToken);
 
-      if (!payload || !payload.userId || !payload.userId.startsWith('guest_')) {
+      if (!payload || !payload.userId || payload.type !== 'guest') {
         router.push('/');
         return;
       }
