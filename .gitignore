@@ -131,3 +131,4 @@ Thumbs.db
 .env.vercel
 
 .env*.local
+cookies.txt
