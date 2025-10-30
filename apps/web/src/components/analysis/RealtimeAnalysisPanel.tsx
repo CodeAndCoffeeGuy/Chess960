@@ -111,14 +111,14 @@ export const RealtimeAnalysisPanel: React.FC<RealtimeAnalysisPanelProps> = ({
     };
   }, [fen, enabled, depth, playerColor]);
 
-  const formatEvaluation = useCallback((eval: number, mate?: number): string => {
+  const formatEvaluation = useCallback((evaluation: number, mate?: number): string => {
     if (mate !== undefined) {
       return `M${Math.abs(mate)}`;
     }
-    if (eval > 0) {
-      return `+${(eval / 100).toFixed(1)}`;
+    if (evaluation > 0) {
+      return `+${(evaluation / 100).toFixed(1)}`;
     }
-    return (eval / 100).toFixed(1);
+    return (evaluation / 100).toFixed(1);
   }, []);
 
   const formatMove = useCallback((uci: string): string => {
