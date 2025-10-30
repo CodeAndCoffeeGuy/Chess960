@@ -3,13 +3,11 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Chess } from 'chess.js';
-import { pageSEO } from '@/lib/seo';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
-// Export metadata for SEO
-export const metadata = pageSEO.play;
+// Page-level metadata must be exported from a server component; this is a client page.
 import { ReactChessBoard } from '@/components/chess/ReactChessBoard';
 import { BulletStyleClock } from '@/components/chess/BulletStyleClock';
 import { MatchmakingQueue } from '@/components/game/MatchmakingQueue';

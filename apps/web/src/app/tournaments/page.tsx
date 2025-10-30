@@ -4,10 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Trophy, Clock, Users, Calendar, Zap } from 'lucide-react';
 import { useSession } from 'next-auth/react';
-import { pageSEO } from '@/lib/seo';
-
-// Export metadata for SEO
-export const metadata = pageSEO.tournaments;
+// Page-level metadata must be exported from a server component; this is a client page.
 
 interface Tournament {
   id: string;
