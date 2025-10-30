@@ -277,23 +277,23 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1f1d1a] light:bg-[#f5f1ea] text-white light:text-black py-4 sm:py-8 md:py-12">
+    <div className="min-h-screen bg-[#1f1d1a] light:bg-[#f5f1ea] text-white light:text-black py-3 sm:py-8 md:py-12">
       <div className={`max-w-6xl mx-auto px-3 sm:px-4 transition-opacity duration-300 ${showContent ? 'opacity-100' : 'opacity-0'}`}>
         {/* User Header */}
-        <div className="bg-[#35322e]/50 light:bg-white/50 backdrop-blur-sm rounded-2xl border border-[#474239] light:border-[#d4caba] p-4 sm:p-6 md:p-8 mb-4 sm:mb-6 md:mb-8">
-          <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+        <div className="bg-[#35322e]/50 light:bg-white/50 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-[#474239] light:border-[#d4caba] p-3 sm:p-6 md:p-8 mb-3 sm:mb-6 md:mb-8">
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl text-white light:text-black font-geist">
+              <h1 className="text-xl sm:text-3xl md:text-4xl text-white light:text-black font-geist">
                 {stats.handle}
               </h1>
               {(stats.fullName || stats.country) && (
-                <div className="text-[#c1b9ad] light:text-[#5a5449] mt-2 text-base sm:text-lg">
+                <div className="text-[#c1b9ad] light:text-[#5a5449] mt-1.5 sm:mt-2 text-sm sm:text-base md:text-lg">
                   {stats.fullName && <span>{stats.fullName}</span>}
                   {stats.fullName && stats.country && <span> · </span>}
                   {stats.country && <span>{countries.find(c => c.code === stats.country)?.name || stats.country}</span>}
                 </div>
               )}
-              <div className="mt-2 text-sm sm:text-base space-y-1">
+              <div className="mt-1.5 sm:mt-2 text-xs sm:text-sm md:text-base space-y-0.5 sm:space-y-1">
                 <p className="text-[#a0958a] light:text-[#5a5449]">Member since {memberSince}</p>
                 <p className="text-[#a0958a] light:text-[#5a5449]">Last active: <span className="text-white light:text-black">{getLastActivityText()}</span></p>
               </div>
@@ -308,22 +308,22 @@ export default function ProfilePage() {
                 <button
                   onClick={handleFollowToggle}
                   disabled={followLoading}
-                  className={`flex items-center justify-center gap-2 px-4 py-2 text-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl ${
+                  className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base text-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl ${
                     isFollowing
                       ? 'bg-gray-600 hover:bg-gray-700'
                       : 'bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-600 hover:to-red-700'
                   } disabled:bg-gray-600 disabled:cursor-not-allowed`}
                 >
-                  {isFollowing ? <Check className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
+                  {isFollowing ? <Check className="h-4 w-4 sm:h-5 sm:w-5" /> : <UserPlus className="h-4 w-4 sm:h-5 sm:w-5" />}
                   {followLoading ? 'Loading...' : isFollowing ? 'Following' : 'Follow'}
                 </button>
 
                 {isFollowing && (
                   <a
                     href="/messages"
-                    className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-600 hover:to-red-700 text-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+                    className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-600 hover:to-red-700 text-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
                   >
-                    <MessageSquare className="h-5 w-5" />
+                    <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />
                     Message
                   </a>
                 )}
@@ -333,11 +333,11 @@ export default function ProfilePage() {
         </div>
 
         {/* Ratings */}
-        <div className="bg-[#35322e]/50 light:bg-white/50 backdrop-blur-sm rounded-2xl border border-[#474239] light:border-[#d4caba] mb-4 sm:mb-6 md:mb-8">
+        <div className="bg-[#35322e]/50 light:bg-white/50 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-[#474239] light:border-[#d4caba] mb-3 sm:mb-6 md:mb-8">
           {/* Rating Display */}
-          <div className="p-4 sm:p-5 md:p-6">
+          <div className="p-3 sm:p-5 md:p-6">
             {/* Speed Category Selector */}
-            <div className="flex gap-2 mb-6 flex-wrap">
+            <div className="flex gap-1.5 sm:gap-2 mb-4 sm:mb-6 flex-wrap">
               {[
                 { key: 'bullet', label: 'Bullet', color: 'text-yellow-500', bgColor: 'bg-yellow-500/20', borderColor: 'border-yellow-500/30' },
                 { key: 'blitz', label: 'Blitz', color: 'text-orange-400', bgColor: 'bg-orange-400/20', borderColor: 'border-orange-400/30' },
@@ -347,14 +347,14 @@ export default function ProfilePage() {
                 <button
                   key={key}
                   onClick={() => setSelectedSpeed(key as any)}
-                  className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 border ${
+                  className={`px-2.5 sm:px-4 py-1.5 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 border ${
                     selectedSpeed === key
                       ? 'bg-orange-400 text-white shadow-lg border-orange-400 transform scale-105'
                       : `bg-[#474239] light:bg-[#d4caba] text-[#a0958a] light:text-[#5a5449] hover:bg-[#5a5449] light:hover:bg-[#a0958a] hover:shadow-md border-[#474239] light:border-[#d4caba] hover:${bgColor} hover:${borderColor}`
                   }`}
                 >
-                  <span className={`${selectedSpeed === key ? 'text-white' : color} font-semibold flex items-center gap-2`}>
-                    <div className={`w-2 h-2 rounded-full ${selectedSpeed === key ? 'bg-white' : 'bg-current'}`}></div>
+                  <span className={`${selectedSpeed === key ? 'text-white' : color} font-semibold flex items-center gap-1 sm:gap-2`}>
+                    <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${selectedSpeed === key ? 'bg-white' : 'bg-current'}`}></div>
                     {label}
                   </span>
                 </button>
@@ -386,11 +386,11 @@ export default function ProfilePage() {
             </div>
 
             {/* Current Rating Display */}
-            <div className="mb-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-[#2a2723] light:bg-[#f5f1ea] rounded-lg p-4 border border-[#474239] light:border-[#d4caba]">
+            <div className="mb-4 sm:mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 sm:gap-4">
+                <div className="bg-[#2a2723] light:bg-[#f5f1ea] rounded-lg p-3 sm:p-4 border border-[#474239] light:border-[#d4caba]">
                   <div className="text-xs text-[#a0958a] light:text-[#5a5449] mb-1">Current Rating</div>
-                  <div className="text-2xl font-bold text-white light:text-black">
+                  <div className="text-xl sm:text-2xl font-bold text-white light:text-black">
                     {stats.ratings.find(r => {
                       const speedMap = {
                         bullet: ['1+0', '2+0', '2+1'],
@@ -402,9 +402,9 @@ export default function ProfilePage() {
                     })?.rating || 'N/A'}
                   </div>
                 </div>
-                <div className="bg-[#2a2723] light:bg-[#f5f1ea] rounded-lg p-4 border border-[#474239] light:border-[#d4caba]">
+                <div className="bg-[#2a2723] light:bg-[#f5f1ea] rounded-lg p-3 sm:p-4 border border-[#474239] light:border-[#d4caba]">
                   <div className="text-xs text-[#a0958a] light:text-[#5a5449] mb-1">Rating Deviation</div>
-                  <div className="text-2xl font-bold text-orange-400">
+                  <div className="text-xl sm:text-2xl font-bold text-orange-400">
                     {stats.ratings.find(r => {
                       const speedMap = {
                         bullet: ['1+0', '2+0', '2+1'],
@@ -416,9 +416,9 @@ export default function ProfilePage() {
                     })?.rd || 'N/A'}
                   </div>
                 </div>
-                <div className="bg-[#2a2723] light:bg-[#f5f1ea] rounded-lg p-4 border border-[#474239] light:border-[#d4caba]">
+                <div className="bg-[#2a2723] light:bg-[#f5f1ea] rounded-lg p-3 sm:p-4 border border-[#474239] light:border-[#d4caba]">
                   <div className="text-xs text-[#a0958a] light:text-[#5a5449] mb-1">Games Played</div>
-                  <div className="text-2xl font-bold text-white light:text-black">
+                  <div className="text-xl sm:text-2xl font-bold text-white light:text-black">
                     {stats.gamesPlayed}
                   </div>
                 </div>
@@ -431,30 +431,30 @@ export default function ProfilePage() {
         </div>
 
         {/* Statistics Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 mb-4 sm:mb-6 md:mb-8">
-          <div className="bg-[#35322e]/50 light:bg-white/50 backdrop-blur-sm rounded-xl border border-[#474239] light:border-[#d4caba] p-4 sm:p-5 md:p-6">
-            <div className="text-xs sm:text-sm text-[#a0958a] light:text-[#5a5449] mb-2">Games Played</div>
-            <div className="text-2xl sm:text-3xl font-bold text-white light:text-black">{stats.gamesPlayed}</div>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-6 md:mb-8">
+          <div className="bg-[#35322e]/50 light:bg-white/50 backdrop-blur-sm rounded-lg sm:rounded-xl border border-[#474239] light:border-[#d4caba] p-3 sm:p-5 md:p-6">
+            <div className="text-xs sm:text-sm text-[#a0958a] light:text-[#5a5449] mb-1 sm:mb-2">Games Played</div>
+            <div className="text-xl sm:text-2xl md:text-3xl font-bold text-white light:text-black">{stats.gamesPlayed}</div>
           </div>
 
-          <div className="bg-[#35322e]/50 light:bg-white/50 backdrop-blur-sm rounded-xl border border-[#474239] light:border-[#d4caba] p-4 sm:p-5 md:p-6">
-            <div className="text-xs sm:text-sm text-[#a0958a] light:text-[#5a5449] mb-2">Wins</div>
-            <div className="text-2xl sm:text-3xl font-bold text-green-400">{stats.gamesWon}</div>
+          <div className="bg-[#35322e]/50 light:bg-white/50 backdrop-blur-sm rounded-lg sm:rounded-xl border border-[#474239] light:border-[#d4caba] p-3 sm:p-5 md:p-6">
+            <div className="text-xs sm:text-sm text-[#a0958a] light:text-[#5a5449] mb-1 sm:mb-2">Wins</div>
+            <div className="text-xl sm:text-2xl md:text-3xl font-bold text-green-400">{stats.gamesWon}</div>
           </div>
 
-          <div className="bg-[#35322e]/50 light:bg-white/50 backdrop-blur-sm rounded-xl border border-[#474239] light:border-[#d4caba] p-4 sm:p-5 md:p-6">
-            <div className="text-xs sm:text-sm text-[#a0958a] light:text-[#5a5449] mb-2">Losses</div>
-            <div className="text-2xl sm:text-3xl font-bold text-red-400">{stats.gamesLost}</div>
+          <div className="bg-[#35322e]/50 light:bg-white/50 backdrop-blur-sm rounded-lg sm:rounded-xl border border-[#474239] light:border-[#d4caba] p-3 sm:p-5 md:p-6">
+            <div className="text-xs sm:text-sm text-[#a0958a] light:text-[#5a5449] mb-1 sm:mb-2">Losses</div>
+            <div className="text-xl sm:text-2xl md:text-3xl font-bold text-red-400">{stats.gamesLost}</div>
           </div>
 
-          <div className="bg-[#35322e]/50 light:bg-white/50 backdrop-blur-sm rounded-xl border border-[#474239] light:border-[#d4caba] p-4 sm:p-5 md:p-6">
-            <div className="text-xs sm:text-sm text-[#a0958a] light:text-[#5a5449] mb-2">Draws</div>
-            <div className="text-2xl sm:text-3xl font-bold text-gray-400">{stats.gamesDrawn}</div>
+          <div className="bg-[#35322e]/50 light:bg-white/50 backdrop-blur-sm rounded-lg sm:rounded-xl border border-[#474239] light:border-[#d4caba] p-3 sm:p-5 md:p-6">
+            <div className="text-xs sm:text-sm text-[#a0958a] light:text-[#5a5449] mb-1 sm:mb-2">Draws</div>
+            <div className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-400">{stats.gamesDrawn}</div>
           </div>
 
-          <div className="bg-[#35322e]/50 light:bg-white/50 backdrop-blur-sm rounded-xl border border-[#474239] light:border-[#d4caba] p-4 sm:p-5 md:p-6">
-            <div className="text-xs sm:text-sm text-[#a0958a] light:text-[#5a5449] mb-2">Win Rate</div>
-            <div className="text-2xl sm:text-3xl font-bold text-orange-400">{winRate}%</div>
+          <div className="bg-[#35322e]/50 light:bg-white/50 backdrop-blur-sm rounded-lg sm:rounded-xl border border-[#474239] light:border-[#d4caba] p-3 sm:p-5 md:p-6">
+            <div className="text-xs sm:text-sm text-[#a0958a] light:text-[#5a5449] mb-1 sm:mb-2">Win Rate</div>
+            <div className="text-xl sm:text-2xl md:text-3xl font-bold text-orange-400">{winRate}%</div>
           </div>
         </div>
 

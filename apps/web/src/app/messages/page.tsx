@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import { MessageSquare, Send, Users, Check, CheckCheck, Clock, AlertCircle } from 'lucide-react';
 import { groupMessages, type MessageGroup } from '@/lib/message-grouping';
 import { useWebSocket } from '@/hooks/useWebSocket';
-import { throttle } from '@/lib/throttle';
+import { throttle, debounce } from '@/lib/throttle';
+import { getDraft, saveDraft, clearDraft } from '@/lib/message-drafts';
 
 interface User {
   id: string;
@@ -62,8 +63,11 @@ export default function MessagesPage() {
   const [following, setFollowing] = useState<User[]>([]);
   const [typingState, setTypingState] = useState<TypingState | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const optimisticIdCounter = useRef(0); // Counter for generating temporary IDs
+  const userScrolledUp = useRef(false); // Track if user manually scrolled up
+  const previousMessagesLength = useRef(0); // Track message count for load detection
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -76,15 +80,57 @@ export default function MessagesPage() {
   }, [status, router]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    // Only scroll if messages were added (not loaded older messages)
+    if (messages.length > previousMessagesLength.current) {
+      // New messages added - use smart scroll (respects user scroll position)
+      scrollToBottom();
+    }
+    previousMessagesLength.current = messages.length;
+  }, [messages, scrollToBottom]);
 
-  // Reset textarea height when conversation changes
+  // Reset textarea height and scroll state when conversation changes
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
-  }, [selectedConversation]);
+    userScrolledUp.current = false;
+    previousMessagesLength.current = 0;
+
+    // Load draft for new conversation
+    if (selectedConversation) {
+      const draft = getDraft(selectedConversation.id);
+      setMessageInput(draft);
+      // Trigger resize for loaded draft
+      setTimeout(() => {
+        if (textareaRef.current && draft) {
+          handleTextareaResize();
+        }
+      }, 0);
+    } else {
+      setMessageInput('');
+    }
+
+    // Force scroll to bottom when opening a conversation
+    setTimeout(() => scrollToBottom(true), 100);
+  }, [selectedConversation, scrollToBottom, handleTextareaResize]);
+
+  // Track user scroll behavior
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      // Check if user scrolled up from bottom
+      if (!isNearBottom()) {
+        userScrolledUp.current = true;
+      } else {
+        userScrolledUp.current = false;
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [isNearBottom]);
 
   // WebSocket: Listen for typing events
   useEffect(() => {
@@ -138,9 +184,36 @@ export default function MessagesPage() {
     [isConnected, messageInput]
   );
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // Debounced function to save draft (500ms after user stops typing)
+  const saveDraftDebounced = useMemo(
+    () =>
+      debounce((conversationId: string, content: string) => {
+        saveDraft(conversationId, content);
+      }, 500),
+    []
+  );
+
+  // Check if user is near the bottom of the scroll area
+  const isNearBottom = useCallback(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return true;
+
+    const threshold = 100; // pixels from bottom
+    const scrollBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    return scrollBottom < threshold;
+  }, []);
+
+  // Smart scroll: scroll to bottom only if appropriate
+  const scrollToBottom = useCallback((force = false) => {
+    if (!messagesEndRef.current) return;
+
+    // Always scroll if forced (e.g., when sending a message)
+    // Otherwise, only scroll if user is near bottom
+    if (force || !userScrolledUp.current || isNearBottom()) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      userScrolledUp.current = false;
+    }
+  }, [isNearBottom]);
 
   const handleTextareaResize = useCallback(() => {
     const textarea = textareaRef.current;
@@ -280,10 +353,18 @@ export default function MessagesPage() {
     setMessages([...messages, optimisticMessage]);
     setMessageInput('');
 
+    // Clear draft from localStorage
+    if (selectedConversation) {
+      clearDraft(selectedConversation.id);
+    }
+
     // Reset textarea height
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
+
+    // Force scroll to bottom when sending a message
+    setTimeout(() => scrollToBottom(true), 0);
 
     setSending(true);
 
@@ -399,7 +480,7 @@ export default function MessagesPage() {
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-3 sm:p-4">
+                <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-3 sm:p-4">
                   {messages.length === 0 ? (
                     <p className="text-[#a0958a] light:text-[#5a5449] text-center py-8 text-sm">No messages yet. Start the conversation!</p>
                   ) : (
@@ -535,10 +616,17 @@ export default function MessagesPage() {
                       ref={textareaRef}
                       value={messageInput}
                       onChange={(e) => {
-                        setMessageInput(e.target.value);
+                        const newValue = e.target.value;
+                        setMessageInput(newValue);
                         handleTextareaResize();
+
+                        // Save draft to localStorage (debounced)
+                        if (selectedConversation) {
+                          saveDraftDebounced(selectedConversation.id, newValue);
+                        }
+
                         // Send typing indicator when user types
-                        if (selectedConversation && e.target.value.trim()) {
+                        if (selectedConversation && newValue.trim()) {
                           sendTypingIndicator(selectedConversation.id);
                         }
                       }}
