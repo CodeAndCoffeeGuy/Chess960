@@ -187,8 +187,7 @@ export function Navigation() {
               width={140}
               height={117}
               priority
-              className="mt-3 transition-all duration-200 brightness-100 group-hover:brightness-90"
-              style={{ width: 'auto', height: 'auto' }}
+              className="mt-3 h-auto max-h-16 w-auto transition-all duration-200 brightness-100 group-hover:brightness-90"
             />
             <span className="text-2xl sm:text-3xl font-normal italic bg-gradient-to-r from-orange-300 to-orange-400 bg-clip-text text-transparent -ml-10 transition-all duration-200" style={{ fontFamily: 'Georgia, serif', letterSpacing: '0.01em' }}>
               <span className="text-3xl sm:text-4xl">C</span>hess960
