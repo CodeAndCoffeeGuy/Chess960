@@ -69,49 +69,77 @@ export function generateSEO({
 // Pre-configured metadata for common pages
 export const pageSEO = {
   home: generateSEO({
-    title: 'Chess960 - Ultra-Fast Online Chess Platform',
+    title: 'Chess960 - Fischer Random Chess Platform',
     description:
-      'Play ultra-fast bullet chess online. Instant matchmaking for 1+0 and 2+0 games. Compete with players worldwide, track your Elo rating, and improve your speed chess skills.',
+      'Play Fischer Random Chess online. No opening theory, just pure chess skill. Bullet, blitz, rapid, and classical time controls with randomized starting positions.',
     path: '/',
     keywords: [
-      'bullet chess',
+      'chess960',
+      'fischer random chess',
+      'fischer random',
+      'chess 960',
+      'randomized chess',
       'online chess',
-      'fast chess',
-      '1+0 chess',
-      '2+0 chess',
-      'speed chess',
-      'chess online',
-      'play chess',
+      'bullet chess',
+      'blitz chess',
+      'rapid chess',
+      'classical chess',
+      'chess platform',
       'competitive chess',
+      'no opening theory',
     ],
   }),
 
   play: generateSEO({
-    title: 'Play Chess960',
+    title: 'Play Chess960 - Fischer Random Chess',
     description:
-      'Start playing bullet chess now! Instant matchmaking for 1+0 and 2+0 time controls. Compete in rated or casual games.',
+      'Start playing Fischer Random Chess now! Choose from bullet, blitz, rapid, or classical time controls. No opening theory required.',
     path: '/play',
-    keywords: ['play chess', 'bullet chess game', 'chess matchmaking', 'online chess game'],
+    keywords: ['play chess960', 'fischer random chess', 'play chess', 'chess matchmaking', 'online chess game', 'randomized chess'],
   }),
 
   leaderboard: generateSEO({
-    title: 'Chess Leaderboard',
+    title: 'Chess960 Leaderboard - Top Players',
     description:
-      'View the top bullet chess players. Rankings based on Elo rating. See where you rank among the best players.',
+      'View the top Chess960 players worldwide. Rankings based on Glicko rating across all time controls. See where you rank among the best.',
     path: '/leaderboard',
-    keywords: ['chess leaderboard', 'chess rankings', 'top chess players', 'elo rating', 'chess ratings'],
+    keywords: ['chess960 leaderboard', 'chess rankings', 'top chess players', 'glicko rating', 'chess ratings', 'fischer random chess'],
+  }),
+
+  tournaments: generateSEO({
+    title: 'Chess960 Tournaments',
+    description:
+      'Join Chess960 tournaments and compete with players worldwide. Swiss system, round-robin, and elimination formats available.',
+    path: '/tournaments',
+    keywords: ['chess960 tournaments', 'chess tournaments', 'fischer random tournaments', 'chess competition', 'tournament chess'],
+  }),
+
+  about: generateSEO({
+    title: 'About Chess960 - Fischer Random Chess',
+    description:
+      'Learn about Chess960 (Fischer Random Chess), the chess variant that eliminates opening theory. Discover the history, rules, and benefits of randomized starting positions.',
+    path: '/about',
+    keywords: ['about chess960', 'fischer random chess rules', 'chess960 history', 'randomized chess', 'chess variant'],
+  }),
+
+  faq: generateSEO({
+    title: 'Chess960 FAQ - Frequently Asked Questions',
+    description:
+      'Get answers to common questions about Chess960, Fischer Random Chess rules, time controls, ratings, and gameplay.',
+    path: '/faq',
+    keywords: ['chess960 faq', 'fischer random chess faq', 'chess960 questions', 'chess960 help', 'chess960 rules'],
   }),
 
   signin: generateSEO({
-    title: 'Sign In',
-    description: 'Sign in to Chess960. Play bullet chess, track your rating, and compete with players worldwide.',
+    title: 'Sign In - Chess960',
+    description: 'Sign in to Chess960. Play Fischer Random Chess, track your rating, and compete with players worldwide.',
     path: '/auth/signin',
     noIndex: true, // Don't index auth pages
   }),
 
   signup: generateSEO({
-    title: 'Sign Up',
-    description: 'Create your Chess960 account. Join thousands of players and start improving your speed chess skills.',
+    title: 'Sign Up - Chess960',
+    description: 'Create your Chess960 account. Join thousands of players and start playing Fischer Random Chess.',
     path: '/auth/signup',
     noIndex: true,
   }),
@@ -123,22 +151,35 @@ export function generateProfileSEO(handle: string, rating?: number, gamesPlayed?
   const games = gamesPlayed ? ` • ${gamesPlayed} games` : '';
 
   return generateSEO({
-    title: `${handle}'s Profile`,
-    description: `View ${handle}'s bullet chess profile${stats}${games}. See game history, statistics, and achievements.`,
+    title: `${handle} - Chess960 Profile`,
+    description: `View ${handle}'s Chess960 profile${stats}${games}. See game history, statistics, and achievements in Fischer Random Chess.`,
     path: `/profile/${handle}`,
-    keywords: ['chess profile', 'chess player', handle, 'chess stats', 'chess history'],
+    keywords: ['chess960 profile', 'chess player', handle, 'chess stats', 'chess history', 'fischer random chess'],
   });
 }
 
 // Helper to generate game metadata
-export function generateGameSEO(gameId: string, white?: string, black?: string, result?: string): Metadata {
-  const title = white && black ? `${white} vs ${black}` : 'Chess Game';
+export function generateGameSEO(gameId: string, white?: string, black?: string, result?: string, timeControl?: string): Metadata {
+  const title = white && black ? `${white} vs ${black} - Chess960` : 'Chess960 Game';
   const resultText = result ? ` - ${result}` : '';
+  const timeText = timeControl ? ` (${timeControl})` : '';
 
   return generateSEO({
     title,
-    description: `Watch or replay this bullet chess game${resultText}. View all moves, time control, and analysis.`,
+    description: `Watch or replay this Chess960 game${resultText}${timeText}. View all moves, time control, and analysis of Fischer Random Chess.`,
     path: `/game/${gameId}`,
-    keywords: ['chess game', 'chess replay', 'chess analysis', 'bullet chess game'],
+    keywords: ['chess960 game', 'chess replay', 'chess analysis', 'fischer random chess', 'chess game'],
+  });
+}
+
+// Helper to generate tournament metadata
+export function generateTournamentSEO(tournamentId: string, name: string, status: string, participants?: number): Metadata {
+  const participantText = participants ? ` • ${participants} players` : '';
+  
+  return generateSEO({
+    title: `${name} - Chess960 Tournament`,
+    description: `Join the ${name} Chess960 tournament${participantText}. ${status} tournament with Fischer Random Chess.`,
+    path: `/tournaments/${tournamentId}`,
+    keywords: ['chess960 tournament', 'chess tournament', 'fischer random tournament', name.toLowerCase(), 'chess competition'],
   });
 }

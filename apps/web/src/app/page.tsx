@@ -8,6 +8,10 @@ import { TimeControlModal } from '@/components/game/TimeControlModal';
 import { LiveStats } from '@/components/LiveStats';
 import { BetaNotification } from '@/components/BetaNotification';
 import { useHomepageWebSocket } from '@/hooks/useHomepageWebSocket';
+import { pageSEO } from '@/lib/seo';
+
+// Export metadata for SEO
+export const metadata = pageSEO.home;
 
 export default function HomePage() {
   const { data: session, status } = useSession();

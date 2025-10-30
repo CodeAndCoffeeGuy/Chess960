@@ -1,7 +1,7 @@
 {
-  "name": "Bullet Chess",
-  "short_name": "Bullet Chess",
-  "description": "Ultra-fast bullet chess platform for competitive players",
+  "name": "Chess960 - Fischer Random Chess",
+  "short_name": "Chess960",
+  "description": "Play Fischer Random Chess online. No opening theory, just pure chess skill.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1f1d1a",

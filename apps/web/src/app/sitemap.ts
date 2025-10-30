@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next';
+import { prisma } from '@chess960/db';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://chess960.game';
@@ -74,10 +75,83 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // TODO: Add dynamic routes when needed
-  // - User profiles: /profile/[handle]
-  // - Game archives: /game/[id]
-  // You can fetch from database and add them here
+  // Dynamic routes - fetch from database
+  try {
+    // Get top 1000 user profiles (most active players)
+    const topUsers = await prisma.user.findMany({
+      where: {
+        handle: { not: null },
+        isActive: true,
+      },
+      select: {
+        handle: true,
+        updatedAt: true,
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+      take: 1000,
+    });
 
-  return routes;
+    // Add user profile routes
+    const userRoutes = topUsers.map((user) => ({
+      url: `${baseUrl}/profile/${user.handle}`,
+      lastModified: user.updatedAt,
+      changeFrequency: 'weekly' as const,
+      priority: 0.6,
+    }));
+
+    // Get recent tournaments (last 100)
+    const recentTournaments = await prisma.tournament.findMany({
+      where: {
+        status: { in: ['UPCOMING', 'LIVE', 'FINISHED'] },
+      },
+      select: {
+        id: true,
+        updatedAt: true,
+        status: true,
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+      take: 100,
+    });
+
+    // Add tournament routes
+    const tournamentRoutes = recentTournaments.map((tournament) => ({
+      url: `${baseUrl}/tournaments/${tournament.id}`,
+      lastModified: tournament.updatedAt,
+      changeFrequency: tournament.status === 'LIVE' ? 'hourly' as const : 'daily' as const,
+      priority: tournament.status === 'LIVE' ? 0.8 : 0.7,
+    }));
+
+    // Get recent games (last 500)
+    const recentGames = await prisma.game.findMany({
+      where: {
+        status: 'FINISHED',
+      },
+      select: {
+        id: true,
+        updatedAt: true,
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+      take: 500,
+    });
+
+    // Add game routes
+    const gameRoutes = recentGames.map((game) => ({
+      url: `${baseUrl}/game/${game.id}`,
+      lastModified: game.updatedAt,
+      changeFrequency: 'monthly' as const,
+      priority: 0.5,
+    }));
+
+    return [...routes, ...userRoutes, ...tournamentRoutes, ...gameRoutes];
+  } catch (error) {
+    console.error('Error generating sitemap:', error);
+    // Return static routes if database fails
+    return routes;
+  }
 }
