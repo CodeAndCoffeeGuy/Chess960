@@ -184,9 +184,11 @@ export function Navigation() {
             <Image
               src="/logo.png"
               alt="Chess960"
-                width={140}
+              width={140}
               height={117}
+              priority
               className="mt-3 transition-all duration-200 brightness-100 group-hover:brightness-90"
+              style={{ width: 'auto', height: 'auto' }}
             />
             <span className="text-2xl sm:text-3xl font-normal italic bg-gradient-to-r from-orange-300 to-orange-400 bg-clip-text text-transparent -ml-10 transition-all duration-200" style={{ fontFamily: 'Georgia, serif', letterSpacing: '0.01em' }}>
               <span className="text-3xl sm:text-4xl">C</span>hess960
@@ -515,27 +517,34 @@ export function Navigation() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b6460] light:text-[#9a958e]" />
             </form>
 
-            {showResults && searchResults.length > 0 && (
-              <div className="mt-2 bg-[#2a2926] light:bg-white border border-[#454038] light:border-[#d4caba] rounded-lg shadow-lg py-1 max-h-64 overflow-y-auto">
-                {searchResults.map((result, index) => (
-                  <Link
-                    key={result.handle}
-                    href={`/profile/${result.handle}`}
-                    className={`block px-4 py-2 text-white light:text-black transition-colors ${
-                      index === selectedIndex ? 'bg-orange-300/20 border-l-2 border-orange-300' : 'hover:bg-[#33302c] light:hover:bg-[#f0ebe0]'
-                    }`}
-                    onClick={() => {
-                      setSearchExpanded(false);
-                      setShowResults(false);
-                      setSearchQuery('');
-                      setSelectedIndex(-1);
-                    }}
-                  >
-                    {result.handle}
-                  </Link>
-                ))}
-              </div>
-            )}
+            {showResults && (() => {
+              const flatResults = [
+                ...searchResults.discussions,
+                ...searchResults.following,
+                ...searchResults.players
+              ];
+              return flatResults.length > 0 ? (
+                <div className="mt-2 bg-[#2a2926] light:bg-white border border-[#454038] light:border-[#d4caba] rounded-lg shadow-lg py-1 max-h-64 overflow-y-auto">
+                  {flatResults.map((result: { handle: string; userId?: string }, index: number) => (
+                    <Link
+                      key={`${result.handle}-${index}`}
+                      href={`/profile/${result.handle}`}
+                      className={`block px-4 py-2 text-white light:text-black transition-colors ${
+                        index === selectedIndex ? 'bg-orange-300/20 border-l-2 border-orange-300' : 'hover:bg-[#33302c] light:hover:bg-[#f0ebe0]'
+                      }`}
+                      onClick={() => {
+                        setSearchExpanded(false);
+                        setShowResults(false);
+                        setSearchQuery('');
+                        setSelectedIndex(-1);
+                      }}
+                    >
+                      {result.handle}
+                    </Link>
+                  ))}
+                </div>
+              ) : null;
+            })()}
           </div>
         )}
 

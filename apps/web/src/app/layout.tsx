@@ -124,12 +124,7 @@ export const metadata: Metadata = {
   },
 
   // Preload critical resources for better LCP
-  other: {
-    'preload': [
-      { href: '/fonts/geist-sans.woff2', as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' },
-      { href: '/fonts/geist-mono.woff2', as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' },
-    ],
-  },
+  // Fonts are handled by geist/font package automatically
 
   // Canonical URL
   alternates: {

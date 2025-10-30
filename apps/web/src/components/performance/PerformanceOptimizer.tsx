@@ -19,18 +19,8 @@ export function PerformanceOptimizer() {
       document.head.appendChild(link);
     });
 
-    // Preload critical CSS
-    const preloadCSS = [
-      '/styles/bullet-clock.css',
-    ];
-
-    preloadCSS.forEach((href) => {
-      const link = document.createElement('link');
-      link.rel = 'preload';
-      link.as = 'style';
-      link.href = href;
-      document.head.appendChild(link);
-    });
+    // CSS is already loaded via Next.js imports in layout.tsx
+    // No need to preload CSS files manually
 
     // Optimize font loading
     if ('fonts' in document) {
