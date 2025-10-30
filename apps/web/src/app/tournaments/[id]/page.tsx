@@ -433,7 +433,7 @@ export default function TournamentDetailPage() {
                         <button
                           onClick={handleLeave}
                           disabled={joining}
-                          className="flex items-center gap-2 bg-orange-400 hover:bg-orange-500 text-white px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex items-center gap-2 bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-600 hover:to-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <UserMinus className="h-5 w-5" />
                           {joining ? 'Leaving...' : 'Leave Tournament'}
@@ -442,7 +442,7 @@ export default function TournamentDetailPage() {
                         <button
                           onClick={handleJoin}
                           disabled={joining}
-                          className="flex items-center gap-2 bg-gradient-to-r from-orange-400 to-orange-400 hover:from-orange-500 hover:to-orange-500 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex items-center gap-2 bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-600 hover:to-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <UserPlus className="h-5 w-5" />
                           {joining ? 'Joining...' : 'Join Tournament'}

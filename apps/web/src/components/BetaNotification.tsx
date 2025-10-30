@@ -86,7 +86,7 @@ export function BetaNotification({ className = '' }: BetaNotificationProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Get notified when ready"
-              className="w-full pl-10 pr-4 py-2 bg-white/15 border-2 border-gray-400/40 rounded-lg text-sm text-white placeholder-gray-400/70 focus:outline-none focus:ring-2 focus:ring-gray-400/60 focus:border-gray-400/80 transition-all"
+              className="w-full pl-10 pr-4 py-2 bg-white/15 border-2 border-gray-400/40 rounded-lg text-sm text-white light:text-gray-600 placeholder-gray-400/70 focus:outline-none focus:ring-2 focus:ring-gray-400/60 focus:border-gray-400/80 transition-all"
               disabled={isLoading}
             />
           </div>

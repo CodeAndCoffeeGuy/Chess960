@@ -124,7 +124,7 @@ export default function TeamTournamentsPage() {
           <div className="mb-8 text-center">
             <Link
               href="/team-tournaments/create"
-              className="inline-block bg-gradient-to-r from-orange-400 to-orange-400 hover:from-orange-500 hover:to-orange-500 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
+              className="inline-block bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-600 hover:to-red-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               Create Team Tournament
             </Link>

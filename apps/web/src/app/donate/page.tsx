@@ -69,7 +69,7 @@ function CustomDonation({ type = 'one-time' }: { type?: 'one-time' | 'subscripti
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 sm:gap-3">
-        <span className="text-lg sm:text-xl font-bold text-orange-300">$</span>
+        <span className="text-lg sm:text-xl font-bold text-orange-400">$</span>
         <input
           type="number"
           min="1"
@@ -155,7 +155,7 @@ export default function DonatePage() {
               <div className="inline-block p-3 sm:p-4 bg-gradient-to-br from-orange-300 to-orange-400 rounded-lg mb-4 sm:mb-6">
                 <Server className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
-              <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-orange-300">Server Infrastructure</h3>
+              <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-orange-400">Server Infrastructure</h3>
               <p className="text-sm sm:text-base text-[#c1b9ad] light:text-[#5a5449] leading-relaxed">
                 Powerful servers to handle thousands of real-time Chess960 games simultaneously with minimal latency.
               </p>
@@ -167,7 +167,7 @@ export default function DonatePage() {
               <div className="inline-block p-3 sm:p-4 bg-gradient-to-br from-orange-300 to-orange-400 rounded-lg mb-4 sm:mb-6">
                 <Code className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
-              <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-orange-300">Active Development</h3>
+              <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-orange-400">Active Development</h3>
               <p className="text-sm sm:text-base text-[#c1b9ad] light:text-[#5a5449] leading-relaxed">
                 Full-time development to add new features, fix bugs, and continuously improve the platform.
               </p>
@@ -179,7 +179,7 @@ export default function DonatePage() {
               <div className="inline-block p-3 sm:p-4 bg-gradient-to-br from-orange-300 to-orange-400 rounded-lg mb-4 sm:mb-6">
                 <Users className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
-              <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-orange-300">Free for Everyone</h3>
+              <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-orange-400">Free for Everyone</h3>
               <p className="text-sm sm:text-base text-[#c1b9ad] light:text-[#5a5449] leading-relaxed">
                 Keeping Chess960 completely free with no ads, no premium features, and no paywalls. Forever.
               </p>
@@ -200,10 +200,10 @@ export default function DonatePage() {
               className="w-full px-4 sm:px-6 py-4 flex items-center justify-between text-left hover:bg-[#33302c] light:hover:bg-[#f5f1ea] transition-colors"
             >
               <div className="flex items-center gap-3">
-                <span className="text-lg sm:text-xl font-semibold text-orange-300">One-Time Donation</span>
+                <span className="text-lg sm:text-xl font-semibold text-orange-400">One-Time Donation</span>
               </div>
               {openDonationType === 'one-time' ? (
-                <ChevronUp className="h-5 w-5 text-orange-300 flex-shrink-0" />
+                <ChevronUp className="h-5 w-5 text-orange-400 flex-shrink-0" />
               ) : (
                 <ChevronDown className="h-5 w-5 text-[#a0958a] light:text-[#5a5449] flex-shrink-0" />
               )}
@@ -214,7 +214,7 @@ export default function DonatePage() {
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-xl font-bold text-orange-300">$5</div>
+                        <div className="text-xl font-bold text-orange-400">$5</div>
                         <p className="text-xs text-[#c1b9ad] light:text-[#5a5449]">Buy us a coffee</p>
                       </div>
                       <DonationButton amount={5} />
@@ -226,7 +226,7 @@ export default function DonatePage() {
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-xl font-bold text-orange-300">$10</div>
+                        <div className="text-xl font-bold text-orange-400">$10</div>
                         <p className="text-xs text-[#c1b9ad] light:text-[#5a5449]">Support development</p>
                       </div>
                       <DonationButton amount={10} />
@@ -238,7 +238,7 @@ export default function DonatePage() {
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-xl font-bold text-orange-300">$25</div>
+                        <div className="text-xl font-bold text-orange-400">$25</div>
                         <p className="text-xs text-[#c1b9ad] light:text-[#5a5449]">Very generous contribution</p>
                       </div>
                       <DonationButton amount={25} />
@@ -248,7 +248,7 @@ export default function DonatePage() {
 
                 <div className="bg-[#33302c] light:bg-[#faf7f2] border border-[#3e3a33] light:border-[#d4caba] rounded-lg p-4 hover:border-orange-300/50 transition-all duration-200">
                   <div className="mb-3">
-                    <div className="text-xl font-bold text-orange-300">Custom</div>
+                    <div className="text-xl font-bold text-orange-400">Custom</div>
                     <p className="text-xs text-[#c1b9ad] light:text-[#5a5449]">Choose your own amount</p>
                   </div>
                   <CustomDonation />
@@ -264,10 +264,10 @@ export default function DonatePage() {
               className="w-full px-4 sm:px-6 py-4 flex items-center justify-between text-left hover:bg-[#33302c] light:hover:bg-[#f5f1ea] transition-colors"
             >
               <div className="flex items-center gap-3">
-                <span className="text-lg sm:text-xl font-semibold text-orange-300">Monthly Support</span>
+                <span className="text-lg sm:text-xl font-semibold text-orange-400">Monthly Support</span>
               </div>
               {openDonationType === 'monthly' ? (
-                <ChevronUp className="h-5 w-5 text-orange-300 flex-shrink-0" />
+                <ChevronUp className="h-5 w-5 text-orange-400 flex-shrink-0" />
               ) : (
                 <ChevronDown className="h-5 w-5 text-[#a0958a] light:text-[#5a5449] flex-shrink-0" />
               )}
@@ -278,7 +278,7 @@ export default function DonatePage() {
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-xl font-bold text-orange-300">$5/month</div>
+                        <div className="text-xl font-bold text-orange-400">$5/month</div>
                         <p className="text-xs text-[#c1b9ad] light:text-[#5a5449]">Basic support</p>
                       </div>
                       <DonationButton amount={5} type="subscription" />
@@ -290,7 +290,7 @@ export default function DonatePage() {
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-xl font-bold text-orange-300">$10/month</div>
+                        <div className="text-xl font-bold text-orange-400">$10/month</div>
                         <p className="text-xs text-[#c1b9ad] light:text-[#5a5449]">Regular supporter</p>
                       </div>
                       <DonationButton amount={10} type="subscription" />
@@ -302,7 +302,7 @@ export default function DonatePage() {
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-xl font-bold text-orange-300">$25/month</div>
+                        <div className="text-xl font-bold text-orange-400">$25/month</div>
                         <p className="text-xs text-[#c1b9ad] light:text-[#5a5449]">Premium supporter</p>
                       </div>
                       <DonationButton amount={25} type="subscription" />
@@ -312,7 +312,7 @@ export default function DonatePage() {
 
                 <div className="bg-[#33302c] light:bg-[#faf7f2] border border-[#3e3a33] light:border-[#d4caba] rounded-lg p-4 hover:border-orange-300/50 transition-all duration-200">
                   <div className="mb-3">
-                    <div className="text-xl font-bold text-orange-300">Custom</div>
+                    <div className="text-xl font-bold text-orange-400">Custom</div>
                     <p className="text-xs text-[#c1b9ad] light:text-[#5a5449]">Choose your own amount</p>
                   </div>
                   <CustomDonation type="subscription" />
@@ -325,12 +325,12 @@ export default function DonatePage() {
         {/* Desktop: Side-by-side grid */}
         <div className="hidden md:grid md:grid-cols-2 gap-8 mb-8">
           <div>
-            <h3 className="text-xl font-semibold text-center mb-6 text-orange-300">One-Time Donation</h3>
+            <h3 className="text-xl font-semibold text-center mb-6 text-orange-400">One-Time Donation</h3>
             <div className="space-y-4">
               <div className="bg-[#2a2926] light:bg-white border border-[#3e3a33] light:border-[#d4caba] rounded-xl p-6 hover:border-orange-300 transition-all duration-300">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-2xl font-bold text-orange-300 mb-1">$5</div>
+                    <div className="text-2xl font-bold text-orange-400 mb-1">$5</div>
                     <p className="text-sm text-[#c1b9ad] light:text-[#5a5449]">Buy us a coffee</p>
                   </div>
                   <div className="ml-4">
@@ -342,7 +342,7 @@ export default function DonatePage() {
               <div className="bg-[#2a2926] light:bg-white border border-[#3e3a33] light:border-[#d4caba] rounded-xl p-6 hover:border-orange-300 transition-all duration-300">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-2xl font-bold text-orange-300 mb-1">$10</div>
+                    <div className="text-2xl font-bold text-orange-400 mb-1">$10</div>
                     <p className="text-sm text-[#c1b9ad] light:text-[#5a5449]">Support development</p>
                   </div>
                   <div className="ml-4">
@@ -354,7 +354,7 @@ export default function DonatePage() {
               <div className="bg-[#2a2926] light:bg-white border border-[#3e3a33] light:border-[#d4caba] rounded-xl p-6 hover:border-orange-300 transition-all duration-300">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-2xl font-bold text-orange-300 mb-1">$25</div>
+                    <div className="text-2xl font-bold text-orange-400 mb-1">$25</div>
                     <p className="text-sm text-[#c1b9ad] light:text-[#5a5449]">Very generous contribution</p>
                   </div>
                   <div className="ml-4">
@@ -365,7 +365,7 @@ export default function DonatePage() {
 
               <div className="bg-[#2a2926] light:bg-white border border-[#3e3a33] light:border-[#d4caba] rounded-xl p-6 hover:border-orange-300 transition-all duration-300">
                 <div className="mb-4">
-                  <div className="text-2xl font-bold text-orange-300 mb-1">Custom</div>
+                  <div className="text-2xl font-bold text-orange-400 mb-1">Custom</div>
                   <p className="text-sm text-[#c1b9ad] light:text-[#5a5449]">Choose your own amount</p>
                 </div>
                 <CustomDonation />
@@ -374,12 +374,12 @@ export default function DonatePage() {
           </div>
 
           <div>
-            <h3 className="text-xl font-semibold text-center mb-6 text-orange-300">Monthly Support</h3>
+            <h3 className="text-xl font-semibold text-center mb-6 text-orange-400">Monthly Support</h3>
             <div className="space-y-4">
               <div className="bg-[#2a2926] light:bg-white border border-[#3e3a33] light:border-[#d4caba] rounded-xl p-6 hover:border-orange-300 transition-all duration-300">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-2xl font-bold text-orange-300 mb-1">$5/month</div>
+                    <div className="text-2xl font-bold text-orange-400 mb-1">$5/month</div>
                     <p className="text-sm text-[#c1b9ad] light:text-[#5a5449]">Basic support</p>
                   </div>
                   <div className="ml-4">
@@ -391,7 +391,7 @@ export default function DonatePage() {
               <div className="bg-[#2a2926] light:bg-white border border-[#3e3a33] light:border-[#d4caba] rounded-xl p-6 hover:border-orange-300 transition-all duration-300">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-2xl font-bold text-orange-300 mb-1">$10/month</div>
+                    <div className="text-2xl font-bold text-orange-400 mb-1">$10/month</div>
                     <p className="text-sm text-[#c1b9ad] light:text-[#5a5449]">Regular supporter</p>
                   </div>
                   <div className="ml-4">
@@ -403,7 +403,7 @@ export default function DonatePage() {
               <div className="bg-[#2a2926] light:bg-white border border-[#3e3a33] light:border-[#d4caba] rounded-xl p-6 hover:border-orange-300 transition-all duration-300">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-2xl font-bold text-orange-300 mb-1">$25/month</div>
+                    <div className="text-2xl font-bold text-orange-400 mb-1">$25/month</div>
                     <p className="text-sm text-[#c1b9ad] light:text-[#5a5449]">Premium supporter</p>
                   </div>
                   <div className="ml-4">
@@ -414,7 +414,7 @@ export default function DonatePage() {
 
               <div className="bg-[#2a2926] light:bg-white border border-[#3e3a33] light:border-[#d4caba] rounded-xl p-6 hover:border-orange-300 transition-all duration-300">
                 <div className="mb-4">
-                  <div className="text-2xl font-bold text-orange-300 mb-1">Custom</div>
+                  <div className="text-2xl font-bold text-orange-400 mb-1">Custom</div>
                   <p className="text-sm text-[#c1b9ad] light:text-[#5a5449]">Choose your own amount</p>
                 </div>
                 <CustomDonation type="subscription" />
@@ -448,7 +448,7 @@ export default function DonatePage() {
               >
                 <span className="font-semibold text-white light:text-black text-sm sm:text-base pr-2">{faq.question}</span>
                 {openFaq === index ? (
-                  <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5 text-orange-300 flex-shrink-0" />
+                  <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5 text-orange-400 flex-shrink-0" />
                 ) : (
                   <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-[#a0958a] light:text-[#5a5449] flex-shrink-0" />
                 )}
@@ -465,7 +465,7 @@ export default function DonatePage() {
 
       <AnimatedSection className="max-w-3xl mx-auto px-4 py-12 sm:py-16 text-center">
         <div className="bg-[#2a2926] light:bg-white border border-[#3e3a33] light:border-[#d4caba] rounded-xl p-6 sm:p-8">
-          <Mail className="h-10 w-10 sm:h-12 sm:w-12 text-orange-300 mx-auto mb-4 sm:mb-6" />
+          <Mail className="h-10 w-10 sm:h-12 sm:w-12 text-orange-400 mx-auto mb-4 sm:mb-6" />
           <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Have Questions?</h3>
           <p className="text-sm sm:text-base text-[#c1b9ad] light:text-[#5a5449] mb-4 sm:mb-6 leading-relaxed">
             If you have any questions about donations, need help with payment, or want to discuss other ways to support Chess960, we&apos;re here to help!
@@ -487,7 +487,7 @@ export default function DonatePage() {
         <div className="mt-6 sm:mt-8">
           <Link
             href="/"
-            className="text-orange-300 hover:text-orange-300 font-semibold transition-colors text-sm sm:text-base"
+            className="text-orange-400 hover:text-orange-400 font-semibold transition-colors text-sm sm:text-base"
           >
             Back to Home
           </Link>

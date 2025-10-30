@@ -155,7 +155,7 @@ export default function LobbyPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white light:text-black flex items-center gap-3">
-                <Users className="w-6 h-6 sm:w-8 sm:h-8 text-orange-300" />
+                <Users className="w-6 h-6 sm:w-8 sm:h-8 text-orange-400" />
                 Game Lobbies
               </h1>
               <p className="text-[#b6aea2] light:text-[#5a5449] mt-2 text-sm sm:text-base">
@@ -240,7 +240,7 @@ export default function LobbyPage() {
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-orange-300/20 rounded-full flex items-center justify-center">
-                  <Users className="w-4 h-4 text-orange-300" />
+                  <Users className="w-4 h-4 text-orange-400" />
                 </div>
               </div>
               <div className="flex-1">
@@ -253,7 +253,7 @@ export default function LobbyPage() {
                       {(() => {
                         const speed = getSpeedLabel(activeLobby.timeControl);
                         const Icon = SPEED_ICONS[speed as keyof typeof SPEED_ICONS];
-                        return <Icon className="w-5 h-5 text-orange-300" />;
+                        return <Icon className="w-5 h-5 text-orange-400" />;
                       })()}
                     </div>
                     <div className="flex-1">
@@ -318,7 +318,7 @@ export default function LobbyPage() {
                     <div className="flex items-center gap-3 sm:gap-4">
                       {/* Speed Icon */}
                       <div className="p-2 sm:p-3 bg-[#35322e] light:bg-[#faf7f2] rounded-lg flex-shrink-0">
-                        <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-orange-300" />
+                        <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-orange-400" />
                       </div>
 
                       {/* Lobby Info */}

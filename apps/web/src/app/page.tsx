@@ -111,7 +111,7 @@ export default function HomePage() {
                 setSelectedSpeed('bullet');
                 setTimeControlModalOpen(true);
               }}
-              className={`w-full bg-gradient-to-br from-[#35322e] to-[#2a2926] light:from-white light:to-[#faf7f2] border border-[#474239] light:border-[#d4caba] hover:border-orange-300 rounded-xl p-4 sm:p-6 transition-all duration-200 hover:shadow-[0_0_20px_rgba(251,146,60,0.3)] hover:scale-105 cursor-pointer ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              className={`w-full bg-gradient-to-br from-[#35322e] to-[#2a2926] light:from-white light:to-[#faf7f2] border border-[#474239] light:border-[#d4caba] hover:border-orange-300 rounded-xl p-4 sm:p-6 transition-all duration-200 hover:shadow-[0_0_20px_rgba(251,146,60,0.3)] sm:hover:scale-105 cursor-pointer ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
               style={{ transitionDelay: isVisible ? '0ms' : '500ms' }}
             >
               <div className="text-center">
@@ -125,7 +125,7 @@ export default function HomePage() {
                 setSelectedSpeed('blitz');
                 setTimeControlModalOpen(true);
               }}
-              className={`w-full bg-gradient-to-br from-[#35322e] to-[#2a2926] light:from-white light:to-[#faf7f2] border border-[#474239] light:border-[#d4caba] hover:border-orange-300 rounded-xl p-4 sm:p-6 transition-all duration-200 hover:shadow-[0_0_20px_rgba(251,146,60,0.3)] hover:scale-105 cursor-pointer ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              className={`w-full bg-gradient-to-br from-[#35322e] to-[#2a2926] light:from-white light:to-[#faf7f2] border border-[#474239] light:border-[#d4caba] hover:border-orange-300 rounded-xl p-4 sm:p-6 transition-all duration-200 hover:shadow-[0_0_20px_rgba(251,146,60,0.3)] sm:hover:scale-105 cursor-pointer ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
               style={{ transitionDelay: isVisible ? '0ms' : '600ms' }}
             >
               <div className="text-center">
@@ -139,7 +139,7 @@ export default function HomePage() {
                 setSelectedSpeed('rapid');
                 setTimeControlModalOpen(true);
               }}
-              className={`w-full bg-gradient-to-br from-[#35322e] to-[#2a2926] light:from-white light:to-[#faf7f2] border border-[#474239] light:border-[#d4caba] hover:border-orange-300 rounded-xl p-4 sm:p-6 transition-all duration-200 hover:shadow-[0_0_20px_rgba(251,146,60,0.3)] hover:scale-105 cursor-pointer ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              className={`w-full bg-gradient-to-br from-[#35322e] to-[#2a2926] light:from-white light:to-[#faf7f2] border border-[#474239] light:border-[#d4caba] hover:border-orange-300 rounded-xl p-4 sm:p-6 transition-all duration-200 hover:shadow-[0_0_20px_rgba(251,146,60,0.3)] sm:hover:scale-105 cursor-pointer ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
               style={{ transitionDelay: isVisible ? '0ms' : '700ms' }}
             >
               <div className="text-center">
@@ -153,7 +153,7 @@ export default function HomePage() {
                 setSelectedSpeed('classical');
                 setTimeControlModalOpen(true);
               }}
-              className={`w-full bg-gradient-to-br from-[#35322e] to-[#2a2926] light:from-white light:to-[#faf7f2] border border-[#474239] light:border-[#d4caba] hover:border-orange-300 rounded-xl p-4 sm:p-6 transition-all duration-200 hover:shadow-[0_0_20px_rgba(251,146,60,0.3)] hover:scale-105 cursor-pointer ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              className={`w-full bg-gradient-to-br from-[#35322e] to-[#2a2926] light:from-white light:to-[#faf7f2] border border-[#474239] light:border-[#d4caba] hover:border-orange-300 rounded-xl p-4 sm:p-6 transition-all duration-200 hover:shadow-[0_0_20px_rgba(251,146,60,0.3)] sm:hover:scale-105 cursor-pointer ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
               style={{ transitionDelay: isVisible ? '0ms' : '800ms' }}
             >
               <div className="text-center">

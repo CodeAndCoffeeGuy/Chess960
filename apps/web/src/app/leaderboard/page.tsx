@@ -195,7 +195,7 @@ export default function LeaderboardPage() {
                 <Award className="h-8 w-8 sm:h-12 sm:w-12 text-white mx-auto mb-2 sm:mb-3" />
                 <Link
                   href={`/@/${third.handle}`}
-                  className="text-lg sm:text-xl font-bold text-white hover:text-orange-200 transition-colors block mb-1 sm:mb-2"
+                  className="text-lg sm:text-xl font-bold text-white hover:text-orange-300 transition-colors block mb-1 sm:mb-2"
                 >
                   {third.country && (
                     <span className="text-xl sm:text-2xl mr-1 sm:mr-2">
@@ -205,7 +205,7 @@ export default function LeaderboardPage() {
                   <span className="break-words">{third.handle}</span>
                 </Link>
                 <div className="text-2xl sm:text-3xl font-bold text-white mb-1">{third.rating}</div>
-                <div className="text-xs sm:text-sm text-orange-200">{third.gamesPlayed} games</div>
+                <div className="text-xs sm:text-sm text-orange-400">{third.gamesPlayed} games</div>
               </div>
               <div className="w-20 sm:w-32 h-14 sm:h-20 bg-gradient-to-b from-orange-500 to-orange-700 rounded-t-lg mt-2 flex items-center justify-center">
                 <span className="text-2xl sm:text-4xl font-bold text-white">3</span>
@@ -357,7 +357,7 @@ export default function LeaderboardPage() {
                               {entry.handle}
                             </span>
                             {entry.isSupporter && (
-                              <span className="text-orange-300" title="Supporter">★</span>
+                              <span className="text-orange-400" title="Supporter">★</span>
                             )}
                           </Link>
                         </div>
@@ -416,7 +416,7 @@ export default function LeaderboardPage() {
                                 {entry.handle}
                               </span>
                               {entry.isSupporter && (
-                                <span className="text-orange-300 text-xs" title="Supporter">★</span>
+                                <span className="text-orange-400 text-xs" title="Supporter">★</span>
                               )}
                             </Link>
                           </div>
@@ -515,7 +515,7 @@ export default function LeaderboardPage() {
                                 {champion.winnerHandle}
                               </span>
                               {champion.winnerIsSupporter && (
-                                <span className="text-orange-300" title="Supporter">★</span>
+                                <span className="text-orange-400" title="Supporter">★</span>
                               )}
                             </Link>
                             <div className="text-sm text-[#a0958a] light:text-[#5a5449]">
@@ -581,7 +581,7 @@ export default function LeaderboardPage() {
                           {champion.winnerHandle}
                         </span>
                         {champion.winnerIsSupporter && (
-                          <span className="text-orange-300 text-xs" title="Supporter">★</span>
+                          <span className="text-orange-400 text-xs" title="Supporter">★</span>
                         )}
                       </Link>
                     </div>

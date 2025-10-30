@@ -141,7 +141,7 @@ export default function MessagesPage() {
   return (
     <div className="min-h-screen bg-[#1f1d1a] light:bg-[#f5f1ea] text-white light:text-black py-4 sm:py-6 md:py-8">
       <div className="max-w-7xl mx-auto px-3 sm:px-4">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-orange-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent mb-4 sm:mb-6 md:mb-8">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-orange-300 to-orange-400 bg-clip-text text-transparent mb-4 sm:mb-6 md:mb-8">
           Messages
         </h1>
 
@@ -255,7 +255,7 @@ export default function MessagesPage() {
                     <button
                       type="submit"
                       disabled={!messageInput.trim() || sending}
-                      className="px-3 sm:px-4 py-2 bg-orange-400 hover:bg-orange-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center gap-2"
+                      className="px-3 sm:px-4 py-2 bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-600 hover:to-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-2"
                     >
                       <Send className="h-4 w-4" />
                     </button>

@@ -9,19 +9,19 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Links Section */}
         <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-3 mb-6">
-          <Link href="/about" className="text-[#a0958a] light:text-[#5a5449] hover:text-orange-300 light:hover:text-orange-300 transition-colors text-sm">
+          <Link href="/about" className="text-[#a0958a] light:text-[#5a5449] hover:text-orange-400 light:hover:text-orange-400 transition-colors text-sm">
             About
           </Link>
-          <Link href="/faq" className="text-[#a0958a] light:text-[#5a5449] hover:text-orange-300 light:hover:text-orange-300 transition-colors text-sm">
+          <Link href="/faq" className="text-[#a0958a] light:text-[#5a5449] hover:text-orange-400 light:hover:text-orange-400 transition-colors text-sm">
             FAQ
           </Link>
-          <Link href="/contact" className="text-[#a0958a] light:text-[#5a5449] hover:text-orange-300 light:hover:text-orange-300 transition-colors text-sm">
+          <Link href="/contact" className="text-[#a0958a] light:text-[#5a5449] hover:text-orange-400 light:hover:text-orange-400 transition-colors text-sm">
             Contact
           </Link>
-          <Link href="/terms" className="text-[#a0958a] light:text-[#5a5449] hover:text-orange-300 light:hover:text-orange-300 transition-colors text-sm">
+          <Link href="/terms" className="text-[#a0958a] light:text-[#5a5449] hover:text-orange-400 light:hover:text-orange-400 transition-colors text-sm">
             Terms of Service
           </Link>
-          <Link href="/privacy" className="text-[#a0958a] light:text-[#5a5449] hover:text-orange-300 light:hover:text-orange-300 transition-colors text-sm">
+          <Link href="/privacy" className="text-[#a0958a] light:text-[#5a5449] hover:text-orange-400 light:hover:text-orange-400 transition-colors text-sm">
             Privacy Policy
           </Link>
         </div>
@@ -33,7 +33,7 @@ export function Footer() {
             href="https://github.com/CodeAndCoffeeGuy/Chess960"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-[#a0958a] light:text-[#5a5449] hover:text-orange-300 light:hover:text-orange-300 transition-colors group"
+            className="flex items-center gap-1.5 text-[#a0958a] light:text-[#5a5449] hover:text-orange-400 light:hover:text-orange-400 transition-colors group"
             aria-label="GitHub Source Code"
           >
             <Github className="w-5 h-5" />
@@ -45,7 +45,7 @@ export function Footer() {
             href="https://x.com/Chess960HQ"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#a0958a] light:text-[#5a5449] hover:text-orange-300 light:hover:text-orange-300 transition-colors"
+            className="text-[#a0958a] light:text-[#5a5449] hover:text-orange-400 light:hover:text-orange-400 transition-colors"
             aria-label="X (Twitter)"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

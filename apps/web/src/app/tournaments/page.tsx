@@ -159,7 +159,7 @@ export default function TournamentsPage() {
           <div className="mb-8 text-center px-4">
             <Link
               href="/tournaments/create"
-              className="inline-block bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-700 hover:to-red-700 text-white px-6 sm:px-8 py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base"
+              className="inline-block bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-600 hover:to-red-700 text-white px-6 sm:px-8 py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base"
             >
               Create Tournament
             </Link>

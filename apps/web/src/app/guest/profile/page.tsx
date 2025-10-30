@@ -145,15 +145,15 @@ export default function GuestProfilePage() {
 
           return (
             <div className="relative min-h-screen bg-[#1f1d1a] light:bg-[#f5f1ea] text-white light:text-black">
-              <div className="container mx-auto px-4 py-8">
+              <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
                 <div className="max-w-4xl mx-auto">
-                  <div className="mb-6">
-                    <h1 className="text-3xl font-bold text-white light:text-black mb-2">Guest Profile</h1>
-                    <p className="text-[#a0958a] light:text-[#5a5449]">
+                  <div className="mb-4 sm:mb-6">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-white light:text-black mb-2">Guest Profile</h1>
+                    <p className="text-sm sm:text-base text-[#a0958a] light:text-[#5a5449]">
                       Your guest session progress and statistics
                     </p>
                     {userContext.username && (
-                      <p className="text-sm text-[#8a7f73] light:text-[#6b6358] mt-2">
+                      <p className="text-xs sm:text-sm text-[#8a7f73] light:text-[#6b6358] mt-2">
                         Playing as: {userContext.username}
                       </p>
                     )}

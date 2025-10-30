@@ -308,10 +308,10 @@ export default function ProfilePage() {
                 <button
                   onClick={handleFollowToggle}
                   disabled={followLoading}
-                  className={`flex items-center justify-center gap-2 px-4 py-2 text-white rounded-lg transition-colors ${
+                  className={`flex items-center justify-center gap-2 px-4 py-2 text-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl ${
                     isFollowing
                       ? 'bg-gray-600 hover:bg-gray-700'
-                      : 'bg-orange-400 hover:bg-orange-500'
+                      : 'bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-600 hover:to-red-700'
                   } disabled:bg-gray-600 disabled:cursor-not-allowed`}
                 >
                   {isFollowing ? <Check className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
@@ -321,7 +321,7 @@ export default function ProfilePage() {
                 {isFollowing && (
                   <a
                     href="/messages"
-                    className="flex items-center justify-center gap-2 px-4 py-2 bg-orange-400 hover:bg-orange-500 text-white rounded-lg transition-colors"
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-600 hover:to-red-700 text-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
                   >
                     <MessageSquare className="h-5 w-5" />
                     Message
@@ -340,7 +340,7 @@ export default function ProfilePage() {
             <div className="flex gap-2 mb-6 flex-wrap">
               {[
                 { key: 'bullet', label: 'Bullet', color: 'text-yellow-500', bgColor: 'bg-yellow-500/20', borderColor: 'border-yellow-500/30' },
-                { key: 'blitz', label: 'Blitz', color: 'text-orange-300', bgColor: 'bg-orange-500/20', borderColor: 'border-orange-500/30' },
+                { key: 'blitz', label: 'Blitz', color: 'text-orange-400', bgColor: 'bg-orange-400/20', borderColor: 'border-orange-400/30' },
                 { key: 'rapid', label: 'Rapid', color: 'text-green-500', bgColor: 'bg-green-500/20', borderColor: 'border-green-500/30' },
                 { key: 'classical', label: 'Classical', color: 'text-blue-500', bgColor: 'bg-blue-500/20', borderColor: 'border-blue-500/30' }
               ].map(({ key, label, color, bgColor, borderColor }) => (

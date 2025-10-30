@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { 
           success: true, 
-          message: 'You\'re already on our beta list! We\'ll notify you when we\'re ready.',
+          message: 'Already signed up!',
           alreadyExists: true 
         },
         { status: 200 }
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         success: true, 
-        message: 'Thanks! You\'ll be notified when Chess960 is ready for everyone.',
+        message: 'Signed up!',
         alreadyExists: false 
       },
       { status: 200 }

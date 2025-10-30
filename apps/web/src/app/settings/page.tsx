@@ -14,14 +14,14 @@ const CustomCheckbox = ({ checked, onChange, className = '' }: { checked: boolea
     <button
       type="button"
       onClick={() => onChange(!checked)}
-      className={`relative w-3 h-3 rounded border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500/50 ${
+      className={`relative w-5 h-5 rounded border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-400/50 ${
         checked
-          ? 'bg-orange-300/20 border-orange-300 hover:bg-orange-300/30'
+          ? 'bg-orange-400/20 border-orange-400 hover:bg-orange-400/30'
           : 'bg-[#2b2824] light:bg-white border-[#4a453e] light:border-[#d4caba] hover:border-[#5a5449] light:hover:border-[#a0958a]'
       } ${className}`}
     >
       {checked && (
-        <Check className="absolute inset-0 w-2 h-2 text-orange-500 m-auto" strokeWidth={3} />
+        <Check className="absolute inset-0 w-4 h-4 text-orange-400 m-auto" strokeWidth={3} />
       )}
     </button>
   );
@@ -301,7 +301,7 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-[#1f1d1a] light:bg-[#f5f1ea] text-white light:text-black py-4 sm:py-8 md:py-12">
       <div className="max-w-5xl mx-auto px-3 sm:px-4">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-orange-300 via-orange-200 to-orange-400 bg-clip-text text-transparent mb-4 sm:mb-6 md:mb-8">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-orange-300 to-orange-400 bg-clip-text text-transparent mb-4 sm:mb-6 md:mb-8">
           Settings
         </h1>
 
@@ -313,7 +313,7 @@ export default function SettingsPage() {
               onClick={() => setActiveTab(id)}
               className={`flex items-center space-x-1.5 sm:space-x-2 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm md:text-base font-medium transition-colors relative whitespace-nowrap flex-shrink-0 rounded-lg ${
                 activeTab === id
-                  ? 'text-orange-300 bg-orange-300/10'
+                  ? 'text-orange-400 bg-orange-400/10'
                   : 'text-[#a0958a] light:text-[#5a5449] hover:text-white light:hover:text-black hover:bg-[#33302c] light:hover:bg-[#f5f1ea]'
               }`}
             >
@@ -462,7 +462,7 @@ export default function SettingsPage() {
                 <button
                   type="submit"
                   disabled={loading || username.length < 3}
-                  className="w-full bg-orange-400 text-white py-2.5 sm:py-3 px-4 text-sm sm:text-base rounded-lg hover:bg-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  className="w-full bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-600 hover:to-red-700 text-white py-2.5 sm:py-3 px-4 text-sm sm:text-base rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
                   {loading ? 'Saving...' : 'Save Changes'}
                 </button>
@@ -533,7 +533,7 @@ export default function SettingsPage() {
                 <button
                   onClick={handleSavePreferences}
                   disabled={loading}
-                  className="w-full bg-orange-400 text-white py-2.5 sm:py-3 px-4 text-sm sm:text-base rounded-lg hover:bg-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  className="w-full bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-600 hover:to-red-700 text-white py-2.5 sm:py-3 px-4 text-sm sm:text-base rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
                   {loading ? 'Saving...' : 'Save Preferences'}
                 </button>
@@ -642,7 +642,7 @@ export default function SettingsPage() {
                 <button
                   onClick={handleUpdateAccount}
                   disabled={loading}
-                  className="w-full bg-orange-400 text-white py-2.5 sm:py-3 px-4 text-sm sm:text-base rounded-lg hover:bg-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  className="w-full bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-600 hover:to-red-700 text-white py-2.5 sm:py-3 px-4 text-sm sm:text-base rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
                   {loading ? 'Saving...' : 'Save Privacy Settings'}
                 </button>
@@ -741,7 +741,7 @@ export default function SettingsPage() {
                 <button
                   onClick={saveNotificationSettings}
                   disabled={loading}
-                  className="w-full bg-orange-400 text-white py-2.5 sm:py-3 px-4 text-sm sm:text-base rounded-lg hover:bg-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  className="w-full bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-600 hover:to-red-700 text-white py-2.5 sm:py-3 px-4 text-sm sm:text-base rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
                   {loading ? 'Saving...' : 'Save Notification Settings'}
                 </button>
@@ -870,7 +870,7 @@ export default function SettingsPage() {
                         }
                       }}
                       disabled={loading || !currentPassword || !newPassword || !confirmPassword}
-                      className="w-full bg-orange-400 text-white py-2.5 sm:py-3 px-4 text-sm sm:text-base rounded-lg hover:bg-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                      className="w-full bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-600 hover:to-red-700 text-white py-2.5 sm:py-3 px-4 text-sm sm:text-base rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                     >
                       {loading ? 'Changing...' : 'Change Password'}
                     </button>
@@ -915,7 +915,7 @@ export default function SettingsPage() {
                     }
                   }}
                   disabled={loading}
-                  className="w-full bg-orange-400 text-white py-2.5 sm:py-3 px-4 text-sm sm:text-base rounded-lg hover:bg-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  className="w-full bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-600 hover:to-red-700 text-white py-2.5 sm:py-3 px-4 text-sm sm:text-base rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
                   {loading ? 'Loading...' : 'Manage Subscription'}
                 </button>

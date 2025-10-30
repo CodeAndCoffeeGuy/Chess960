@@ -226,14 +226,14 @@ export default function AuthPage() {
         </div>
       </div>
 
-      <div className="relative max-w-md w-full bg-[#2a2723]/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-[#3e3a33] p-8">
+      <div className="relative max-w-md w-full bg-[#2a2723]/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-[#3e3a33] p-4 sm:p-6 md:p-8 mx-4 sm:mx-0">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <Zap className="h-12 w-12 text-orange-400 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-purple-400 bg-clip-text text-transparent mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-orange-400 to-purple-400 bg-clip-text text-transparent mb-2">
             {isLogin ? 'Welcome Back' : 'Join Chess960'}
           </h1>
-          <p className="text-[#b6aea2]">
+          <p className="text-sm sm:text-base text-[#b6aea2]">
             {isLogin ? 'Sign in to track your rating' : 'Create your account to compete'}
           </p>
         </div>

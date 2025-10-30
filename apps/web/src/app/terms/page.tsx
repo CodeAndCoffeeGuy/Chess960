@@ -60,23 +60,23 @@ export default function TermsPage() {
             </p>
             <ul className="space-y-2 text-[#a0958a] light:text-[#5a5449] ml-6 mb-4">
               <li className="flex items-start">
-                <span className="text-orange-300 mr-2">•</span>
+                <span className="text-orange-400 mr-2">•</span>
                 <span>Using chess engines, bots, or computer assistance during games</span>
               </li>
               <li className="flex items-start">
-                <span className="text-orange-300 mr-2">•</span>
+                <span className="text-orange-400 mr-2">•</span>
                 <span>Receiving outside assistance from other players or sources</span>
               </li>
               <li className="flex items-start">
-                <span className="text-orange-300 mr-2">•</span>
+                <span className="text-orange-400 mr-2">•</span>
                 <span>Creating multiple accounts to manipulate ratings</span>
               </li>
               <li className="flex items-start">
-                <span className="text-orange-300 mr-2">•</span>
+                <span className="text-orange-400 mr-2">•</span>
                 <span>Deliberately losing games to manipulate ratings (sandbagging)</span>
               </li>
               <li className="flex items-start">
-                <span className="text-orange-300 mr-2">•</span>
+                <span className="text-orange-400 mr-2">•</span>
                 <span>Exploiting bugs or glitches in the Service</span>
               </li>
             </ul>
@@ -96,23 +96,23 @@ export default function TermsPage() {
             </p>
             <ul className="space-y-2 text-[#a0958a] light:text-[#5a5449] ml-6">
               <li className="flex items-start">
-                <span className="text-orange-300 mr-2">•</span>
+                <span className="text-orange-400 mr-2">•</span>
                 <span>Harass, abuse, or harm other users</span>
               </li>
               <li className="flex items-start">
-                <span className="text-orange-300 mr-2">•</span>
+                <span className="text-orange-400 mr-2">•</span>
                 <span>Use offensive, vulgar, or inappropriate usernames</span>
               </li>
               <li className="flex items-start">
-                <span className="text-orange-300 mr-2">•</span>
+                <span className="text-orange-400 mr-2">•</span>
                 <span>Spam or send unsolicited messages</span>
               </li>
               <li className="flex items-start">
-                <span className="text-orange-300 mr-2">•</span>
+                <span className="text-orange-400 mr-2">•</span>
                 <span>Attempt to gain unauthorized access to the Service or other accounts</span>
               </li>
               <li className="flex items-start">
-                <span className="text-orange-300 mr-2">•</span>
+                <span className="text-orange-400 mr-2">•</span>
                 <span>Interfere with or disrupt the Service or servers</span>
               </li>
             </ul>
@@ -126,7 +126,7 @@ export default function TermsPage() {
             <p className="text-[#c1b9ad] light:text-[#5a5449] leading-relaxed mb-4">
               Chess960.org is an open source project released under the GNU Affero General Public License v3.0 (AGPL-3.0). The source code is publicly
               available on{' '}
-              <a href="https://github.com/CodeAndCoffeeGuy/Chess960" className="text-orange-300 hover:text-orange-200 transition-colors">
+              <a href="https://github.com/CodeAndCoffeeGuy/Chess960" className="text-orange-400 hover:text-orange-200 transition-colors">
                 GitHub
               </a>
               .
@@ -202,7 +202,7 @@ export default function TermsPage() {
             <h2 className="text-2xl font-bold text-white light:text-black mb-4">10. Contact Information</h2>
             <p className="text-[#c1b9ad] light:text-[#5a5449] leading-relaxed">
               If you have questions about these Terms of Service, please contact us at{' '}
-              <a href="mailto:support@chess960.game" className="text-orange-300 hover:text-orange-200 transition-colors">
+              <a href="mailto:support@chess960.game" className="text-orange-400 hover:text-orange-200 transition-colors">
                 support@chess960.game
               </a>
             </p>

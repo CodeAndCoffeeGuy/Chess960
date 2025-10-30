@@ -237,7 +237,7 @@ export default function SettingsPage() {
                     />
                   </div>
 
-                  <button className="bg-gradient-to-br from-[#35322e] to-[#2a2926] light:from-white light:to-[#faf7f2] border border-[#474239] light:border-[#d4caba] hover:border-orange-300 text-white light:text-black hover:bg-[#3a3632] light:hover:bg-[#f5f1ea] px-6 py-2 rounded-lg font-medium transition-all duration-200">
+                  <button className="w-full sm:w-auto bg-gradient-to-br from-[#35322e] to-[#2a2926] light:from-white light:to-[#faf7f2] border border-[#474239] light:border-[#d4caba] hover:border-orange-300 text-white light:text-black hover:bg-[#3a3632] light:hover:bg-[#f5f1ea] px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-all duration-200 text-sm sm:text-base">
                     Save Changes
                   </button>
                 </div>
@@ -322,7 +322,7 @@ export default function SettingsPage() {
                     />
                   </div>
 
-                  <button className="bg-gradient-to-br from-[#35322e] to-[#2a2926] light:from-white light:to-[#faf7f2] border border-[#474239] light:border-[#d4caba] hover:border-orange-300 text-white light:text-black hover:bg-[#3a3632] light:hover:bg-[#f5f1ea] px-6 py-2 rounded-lg font-medium transition-all duration-200">
+                  <button className="w-full sm:w-auto bg-gradient-to-br from-[#35322e] to-[#2a2926] light:from-white light:to-[#faf7f2] border border-[#474239] light:border-[#d4caba] hover:border-orange-300 text-white light:text-black hover:bg-[#3a3632] light:hover:bg-[#f5f1ea] px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-all duration-200 text-sm sm:text-base">
                     Save Privacy Settings
                   </button>
                 </div>
@@ -418,7 +418,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  <button className="bg-gradient-to-br from-[#35322e] to-[#2a2926] light:from-white light:to-[#faf7f2] border border-[#474239] light:border-[#d4caba] hover:border-orange-300 text-white light:text-black hover:bg-[#3a3632] light:hover:bg-[#f5f1ea] px-6 py-2 rounded-lg font-medium transition-all duration-200">
+                  <button className="w-full sm:w-auto bg-gradient-to-br from-[#35322e] to-[#2a2926] light:from-white light:to-[#faf7f2] border border-[#474239] light:border-[#d4caba] hover:border-orange-300 text-white light:text-black hover:bg-[#3a3632] light:hover:bg-[#f5f1ea] px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-all duration-200 text-sm sm:text-base">
                     Change Password
                   </button>
                 </div>

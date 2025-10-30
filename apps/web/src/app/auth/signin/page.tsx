@@ -46,12 +46,12 @@ export default function SignInPage() {
         </div>
       </div>
 
-      <div className="relative max-w-md w-full space-y-8 p-8 bg-[#35322e]/50 light:bg-white/70 backdrop-blur-sm rounded-2xl border border-[#474239] light:border-[#d4caba] shadow-[0_12px_34px_rgba(0,0,0,0.45)] light:shadow-[0_12px_34px_rgba(0,0,0,0.1)]">
+      <div className="relative max-w-md w-full space-y-6 sm:space-y-8 p-4 sm:p-6 md:p-8 bg-[#35322e]/50 light:bg-white/70 backdrop-blur-sm rounded-2xl border border-[#474239] light:border-[#d4caba] shadow-[0_12px_34px_rgba(0,0,0,0.45)] light:shadow-[0_12px_34px_rgba(0,0,0,0.1)] mx-4 sm:mx-0">
         <div className="text-center">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-300 to-orange-400 bg-clip-text text-transparent mb-2">
+          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-orange-300 to-orange-400 bg-clip-text text-transparent mb-2">
             Chess960
           </h1>
-          <p className="text-[#b6aea2] light:text-[#5a5449]">
+          <p className="text-sm sm:text-base text-[#b6aea2] light:text-[#5a5449]">
             Sign in to start playing lightning-fast chess
           </p>
         </div>
@@ -129,7 +129,7 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={loading !== null}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-400 hover:to-orange-500 text-white rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 sm:py-4 bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-600 hover:to-red-700 text-white rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               {loading === 'email' ? (
                 <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />

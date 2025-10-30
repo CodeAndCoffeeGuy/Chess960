@@ -1,15 +1,25 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
 export default function SetupUsernamePage() {
   const router = useRouter();
-  const { update } = useSession();
+  const { data: session, status, update } = useSession();
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Redirect if user already has a username
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      const user = session.user as any;
+      if (user.handle) {
+        router.push('/');
+      }
+    }
+  }, [status, session, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,24 +58,20 @@ export default function SetupUsernamePage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-[#1f1d1a] text-white overflow-hidden">
-      {/* Background effects */}
+    <div className="relative min-h-screen flex items-center justify-center bg-[#1f1d1a] light:bg-[#f5f1ea] text-white light:text-black overflow-hidden">
+      {/* Background effects - Grid only, no orange circle */}
       <div className="pointer-events-none absolute inset-0">
-        <div
-          className="absolute -top-32 left-1/2 -translate-x-1/2 h-[520px] w-[520px] rounded-full opacity-20 blur-3xl"
-          style={{
-            background:
-              'radial-gradient(ellipse at center, rgba(249,115,22,0.35), rgba(234,88,12,0.15) 45%, transparent 60%)',
-          }}
-        />
         <div className="absolute inset-0 [mask-image:linear-gradient(to_bottom,transparent,black_15%,black_85%,transparent)]">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:40px_40px]" />
+          {/* Dark mode grid - white lines */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:40px_40px] light:hidden" />
+          {/* Light mode grid - black lines */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.08)_1px,transparent_1px)] bg-[size:40px_40px] hidden light:block" />
         </div>
       </div>
 
       <div className="relative max-w-md w-full space-y-8 p-8 bg-[#35322e]/50 backdrop-blur-sm rounded-2xl border border-[#474239] shadow-[0_12px_34px_rgba(0,0,0,0.45)]">
         <div className="text-center">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-300 to-orange-400 bg-clip-text text-transparent mb-2">
             Choose Your Username
           </h1>
           <p className="text-[#b6aea2]">
@@ -90,7 +96,7 @@ export default function SetupUsernamePage() {
               onChange={handleUsernameChange}
               minLength={3}
               maxLength={20}
-              className="w-full px-4 py-3 bg-[#2a2723] border border-[#474239] rounded-lg text-white placeholder-[#6b6460] focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-[#2a2723] border border-[#474239] rounded-lg text-white placeholder-[#6b6460] focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
             />
             <p className="mt-2 text-sm text-[#a0958a]">
               3-20 characters, letters, numbers, hyphens and underscores
@@ -106,7 +112,7 @@ export default function SetupUsernamePage() {
           <button
             type="submit"
             disabled={loading || username.length < 3}
-            className="w-full bg-gradient-to-br from-[#35322e] to-[#2a2926] light:from-white light:to-[#faf7f2] border border-[#474239] light:border-[#d4caba] hover:border-orange-300 text-white light:text-black hover:bg-[#3a3632] light:hover:bg-[#f5f1ea] py-3 px-4 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="w-full bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-600 hover:to-red-700 text-white py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
             {loading ? 'Setting username...' : 'Continue'}
           </button>

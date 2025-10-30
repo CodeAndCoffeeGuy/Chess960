@@ -151,15 +151,15 @@ export function Navigation() {
       <div className="w-full px-2 sm:px-3 md:px-3 lg:px-4">
         <div className="flex items-center h-16">
           {/* Logo */}
-            <Link href="/" className="flex items-center group -ml-8">
+            <Link href="/" className="flex items-center group -ml-8 max-h-16 overflow-hidden">
             <Image
               src="/logo.png"
               alt="Chess960"
-                width={180}
-              height={150}
-              className="mt-7 transition-all duration-200 group-hover:brightness-125"
+                width={140}
+              height={117}
+              className="mt-3 transition-all duration-200 brightness-100 group-hover:brightness-90"
             />
-            <span className="text-2xl sm:text-3xl font-normal italic bg-gradient-to-br from-[#ff914d] via-[#ff751f] to-[#ff914d] group-hover:from-[#ffb380] group-hover:via-[#ffa366] group-hover:to-[#ffb380] bg-clip-text text-transparent -ml-10 transition-all duration-200" style={{ fontFamily: 'Georgia, serif', letterSpacing: '0.01em' }}>
+            <span className="text-2xl sm:text-3xl font-normal italic bg-gradient-to-r from-orange-300 to-orange-400 bg-clip-text text-transparent -ml-10 transition-all duration-200" style={{ fontFamily: 'Georgia, serif', letterSpacing: '0.01em' }}>
               <span className="text-3xl sm:text-4xl">C</span>hess960
             </span>
           </Link>
