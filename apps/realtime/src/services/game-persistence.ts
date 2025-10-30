@@ -252,62 +252,75 @@ export class GamePersistenceService {
 
   private async updateGuestRatingsAndStats(gameState: GameState, tc: TimeControl): Promise<void> {
     try {
-      const { whiteResult, blackResult } = this.parseGameResult(gameState.result);
+      const { whiteResult, blackResult } = this.parseGameResult(gameState.result || '1/2-1/2');
       const isWhiteGuest = gameState.whiteId.startsWith('guest_');
       const isBlackGuest = gameState.blackId.startsWith('guest_');
+
+      // Get ratings before updating for history tracking
+      let whiteRatingBefore = 1500;
+      let blackRatingBefore = 1500;
+
+      if (isWhiteGuest) {
+        const whiteRating = await guestRatingManager.getGuestRating(gameState.whiteId, tc);
+        whiteRatingBefore = whiteRating.rating;
+      }
+      if (isBlackGuest) {
+        const blackRating = await guestRatingManager.getGuestRating(gameState.blackId, tc);
+        blackRatingBefore = blackRating.rating;
+      }
 
       // Update guest ratings
       if (isWhiteGuest && !isBlackGuest) {
         // White is guest, black is registered user
-        const blackRating = this.getOrCreateRating(gameState.blackId, tc);
+        const blackRating = await this.getOrCreateRating(gameState.blackId, tc);
         if (blackRating) {
-        const newWhiteRating = await guestRatingManager.updateGuestRating(
-          gameState.whiteId,
-          tc,
-          {
-            rating: Number(blackRating.rating),
-            rd: Number(blackRating.rd),
-            vol: Number(blackRating.vol),
-          },
-          whiteResult
-        );
+          const newWhiteRating = await guestRatingManager.updateGuestRating(
+            gameState.whiteId,
+            tc,
+            {
+              rating: Number(blackRating.rating),
+              rd: Number(blackRating.rd),
+              vol: Number(blackRating.vol),
+            },
+            whiteResult
+          );
           console.log(`Guest ${gameState.whiteId} rating updated: ${newWhiteRating.rating}`);
         }
       } else if (isBlackGuest && !isWhiteGuest) {
         // Black is guest, white is registered user
-        const whiteRating = this.getOrCreateRating(gameState.whiteId, tc);
+        const whiteRating = await this.getOrCreateRating(gameState.whiteId, tc);
         if (whiteRating) {
-        const newBlackRating = await guestRatingManager.updateGuestRating(
-          gameState.blackId,
-          tc,
-          {
-            rating: Number(whiteRating.rating),
-            rd: Number(whiteRating.rd),
-            vol: Number(whiteRating.vol),
-          },
-          blackResult
-        );
+          const newBlackRating = await guestRatingManager.updateGuestRating(
+            gameState.blackId,
+            tc,
+            {
+              rating: Number(whiteRating.rating),
+              rd: Number(whiteRating.rd),
+              vol: Number(whiteRating.vol),
+            },
+            blackResult
+          );
           console.log(`Guest ${gameState.blackId} rating updated: ${newBlackRating.rating}`);
         }
       } else if (isWhiteGuest && isBlackGuest) {
         // Both are guests - use current ratings
         const whiteCurrentRating = await guestRatingManager.getGuestRating(gameState.whiteId, tc);
         const blackCurrentRating = await guestRatingManager.getGuestRating(gameState.blackId, tc);
-        
+
         const newWhiteRating = await guestRatingManager.updateGuestRating(
           gameState.whiteId,
           tc,
           blackCurrentRating,
           whiteResult
         );
-        
+
         const newBlackRating = await guestRatingManager.updateGuestRating(
           gameState.blackId,
           tc,
           whiteCurrentRating,
           blackResult
         );
-        
+
         console.log(`Guest vs Guest ratings updated: White ${newWhiteRating.rating}, Black ${newBlackRating.rating}`);
       }
 
@@ -324,8 +337,8 @@ export class GamePersistenceService {
         const whiteRatingAfter = await guestRatingManager.getGuestRating(gameState.whiteId, tc);
         await guestRatingManager.addGuestGame(gameState.whiteId, {
           id: gameState.id,
-          timeControl: gameState.tc,
-          result: gameState.result,
+          timeControl: gameState.tc || tc,
+          result: gameState.result || 'unknown',
           opponent: gameState.blackId,
           ratingBefore: whiteRatingBefore,
           ratingAfter: whiteRatingAfter.rating,
@@ -336,8 +349,8 @@ export class GamePersistenceService {
         const blackRatingAfter = await guestRatingManager.getGuestRating(gameState.blackId, tc);
         await guestRatingManager.addGuestGame(gameState.blackId, {
           id: gameState.id,
-          timeControl: gameState.tc,
-          result: gameState.result,
+          timeControl: gameState.tc || tc,
+          result: gameState.result || 'unknown',
           opponent: gameState.whiteId,
           ratingBefore: blackRatingBefore,
           ratingAfter: blackRatingAfter.rating,

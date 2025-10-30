@@ -272,6 +272,40 @@ export class SimpleRealtimeServer {
         message: isMaintenanceMode ? 'Server is in maintenance mode. Games are disabled.' : 'Server is operational.',
         timestamp: new Date().toISOString(),
       }));
+    } else if (req.url === '/api/broadcast/typing' && req.method === 'POST') {
+      // Handle typing indicator broadcast
+      let body = '';
+      req.on('data', chunk => { body += chunk.toString(); });
+      req.on('end', () => {
+        try {
+          const data = JSON.parse(body);
+          const { senderId, senderHandle, receiverId } = data;
+
+          if (!senderId || !receiverId) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Missing senderId or receiverId' }));
+            return;
+          }
+
+          // Find receiver's WebSocket connection and broadcast typing event
+          for (const [ws, connection] of this.connections.entries()) {
+            if (connection.user?.id === receiverId) {
+              this.sendMessage(connection, {
+                t: 'message.typing',
+                userId: senderId,
+                handle: senderHandle,
+              });
+            }
+          }
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: true }));
+        } catch (error) {
+          console.error('Error broadcasting typing event:', error);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Failed to broadcast typing event' }));
+        }
+      });
     } else {
       res.writeHead(404);
       res.end('Not Found');

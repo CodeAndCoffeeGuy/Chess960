@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { MessageSquare, Send, Users, Check, CheckCheck } from 'lucide-react';
+import { MessageSquare, Send, Users, Check, CheckCheck, Clock, AlertCircle } from 'lucide-react';
 import { groupMessages, type MessageGroup } from '@/lib/message-grouping';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { throttle } from '@/lib/throttle';
@@ -32,6 +32,11 @@ interface GroupedMessage extends Message {
   showTimestamp: boolean;
 }
 
+interface OptimisticMessage extends Message {
+  optimistic?: boolean; // Marks message as not yet confirmed by server
+  failed?: boolean;     // Marks message as failed to send
+}
+
 interface TypingState {
   userId: string;
   handle: string;
@@ -50,13 +55,15 @@ export default function MessagesPage() {
   const { on, isConnected } = useWebSocket();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<User | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<OptimisticMessage[]>([]);
   const [messageInput, setMessageInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [following, setFollowing] = useState<User[]>([]);
   const [typingState, setTypingState] = useState<TypingState | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const optimisticIdCounter = useRef(0); // Counter for generating temporary IDs
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -71,6 +78,13 @@ export default function MessagesPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Reset textarea height when conversation changes
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+  }, [selectedConversation]);
 
   // WebSocket: Listen for typing events
   useEffect(() => {
@@ -128,6 +142,23 @@ export default function MessagesPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const handleTextareaResize = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    // Reset height to auto to get the correct scrollHeight
+    textarea.style.height = 'auto';
+
+    // Calculate the number of rows based on content
+    const lineHeight = parseInt(window.getComputedStyle(textarea).lineHeight);
+    const rows = Math.min(Math.max(1, Math.ceil(textarea.scrollHeight / lineHeight)), 10);
+
+    // Set the height based on rows (max 10 rows)
+    const maxHeight = lineHeight * 10;
+    const newHeight = Math.min(textarea.scrollHeight, maxHeight);
+    textarea.style.height = `${newHeight}px`;
+  }, []);
+
   const fetchConversations = async () => {
     try {
       const response = await fetch('/api/messages/conversations');
@@ -171,29 +202,120 @@ export default function MessagesPage() {
     fetchMessages(user.id);
   };
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!messageInput.trim() || !selectedConversation || sending) return;
+  const handleRetryMessage = async (failedMessage: OptimisticMessage) => {
+    if (!selectedConversation) return;
 
-    setSending(true);
+    // Mark message as optimistic again (remove failed flag)
+    setMessages(prev => prev.map(msg =>
+      msg.id === failedMessage.id ? { ...msg, optimistic: true, failed: false } : msg
+    ));
+
     try {
       const response = await fetch('/api/messages/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           receiverId: selectedConversation.id,
-          content: messageInput.trim(),
+          content: failedMessage.content,
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        setMessages([...messages, data.message]);
-        setMessageInput('');
+        // Replace failed message with real one from server
+        setMessages(prev => prev.map(msg =>
+          msg.id === failedMessage.id ? data.message : msg
+        ));
+        fetchConversations();
+      } else {
+        // Mark as failed again
+        setMessages(prev => prev.map(msg =>
+          msg.id === failedMessage.id ? { ...msg, optimistic: false, failed: true } : msg
+        ));
+      }
+    } catch (error) {
+      console.error('Failed to retry message:', error);
+      // Mark as failed again
+      setMessages(prev => prev.map(msg =>
+        msg.id === failedMessage.id ? { ...msg, optimistic: false, failed: true } : msg
+      ));
+    }
+  };
+
+  const handleDeleteFailedMessage = (messageId: string) => {
+    setMessages(prev => prev.filter(msg => msg.id !== messageId));
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!messageInput.trim() || !selectedConversation || sending) return;
+
+    const content = messageInput.trim();
+    const tempId = `optimistic_${Date.now()}_${optimisticIdCounter.current++}`;
+
+    // Create optimistic message immediately
+    const optimisticMessage: OptimisticMessage = {
+      id: tempId,
+      senderId: session!.user!.id as string,
+      receiverId: selectedConversation.id,
+      content,
+      read: false,
+      createdAt: new Date().toISOString(),
+      sender: {
+        id: session!.user!.id as string,
+        handle: (session!.user as any).handle || session!.user!.name || 'You',
+        fullName: session!.user!.name,
+        image: session!.user!.image,
+      },
+      receiver: {
+        id: selectedConversation.id,
+        handle: selectedConversation.handle,
+        fullName: selectedConversation.fullName,
+        image: selectedConversation.image,
+      },
+      optimistic: true, // Mark as optimistic
+    };
+
+    // Add optimistic message to UI immediately
+    setMessages([...messages, optimisticMessage]);
+    setMessageInput('');
+
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+
+    setSending(true);
+
+    try {
+      const response = await fetch('/api/messages/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          receiverId: selectedConversation.id,
+          content,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Replace optimistic message with real one from server
+        setMessages(prev => prev.map(msg =>
+          msg.id === tempId ? data.message : msg
+        ));
         fetchConversations(); // Update conversations list
+      } else {
+        // Mark message as failed
+        setMessages(prev => prev.map(msg =>
+          msg.id === tempId ? { ...msg, optimistic: false, failed: true } : msg
+        ));
       }
     } catch (error) {
       console.error('Failed to send message:', error);
+      // Mark message as failed
+      setMessages(prev => prev.map(msg =>
+        msg.id === tempId ? { ...msg, optimistic: false, failed: true } : msg
+      ));
     } finally {
       setSending(false);
     }
@@ -295,8 +417,10 @@ export default function MessagesPage() {
 
                           {/* Messages for this day */}
                           <div className="space-y-1">
-                            {(dayGroup.messages as GroupedMessage[]).map((message) => {
+                            {(dayGroup.messages as (GroupedMessage & OptimisticMessage)[]).map((message) => {
                               const isOwn = message.senderId === session?.user?.id;
+                              const isOptimistic = message.optimistic;
+                              const isFailed = message.failed;
 
                               return (
                                 <div
@@ -306,7 +430,15 @@ export default function MessagesPage() {
                                   <div
                                     className={`
                                       max-w-[85%] sm:max-w-[75%] px-2.5 sm:px-3 py-2
-                                      ${isOwn ? 'bg-orange-400 text-white' : 'bg-[#2a2723] light:bg-[#f5f1ea] text-white light:text-black border border-[#3e3a33] light:border-[#d4caba]'}
+                                      ${
+                                        isFailed
+                                          ? 'bg-red-400/20 border border-red-400/50 text-white light:text-black'
+                                          : isOptimistic
+                                          ? 'bg-orange-400/70 text-white'
+                                          : isOwn
+                                          ? 'bg-orange-400 text-white'
+                                          : 'bg-[#2a2723] light:bg-[#f5f1ea] text-white light:text-black border border-[#3e3a33] light:border-[#d4caba]'
+                                      }
                                       ${
                                         // Single message or last in group: fully rounded
                                         (message.isFirstInGroup && message.isLastInGroup) || (!message.isFirstInGroup && message.isLastInGroup)
@@ -321,17 +453,50 @@ export default function MessagesPage() {
                                           ? 'rounded-tl-lg rounded-bl-lg rounded-br-lg'
                                           : 'rounded-tr-lg rounded-br-lg rounded-bl-lg'
                                       }
+                                      ${isOptimistic ? 'transition-opacity' : ''}
                                     `}
                                   >
                                     <p className="text-xs sm:text-sm break-words">{message.content}</p>
 
                                     {/* Only show timestamp on last message in group */}
                                     {message.showTimestamp && (
-                                      <div className={`flex items-center justify-end gap-1 mt-1 text-[10px] ${isOwn ? 'text-orange-200' : 'text-[#6b6460] light:text-[#a0958a]'}`}>
+                                      <div className={`flex items-center justify-end gap-1 mt-1 text-[10px] ${
+                                        isFailed
+                                          ? 'text-red-300'
+                                          : isOptimistic
+                                          ? 'text-orange-200'
+                                          : isOwn
+                                          ? 'text-orange-200'
+                                          : 'text-[#6b6460] light:text-[#a0958a]'
+                                      }`}>
                                         <span>{new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                         {isOwn && (
-                                          message.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />
+                                          isFailed ? (
+                                            <AlertCircle className="h-3 w-3" />
+                                          ) : isOptimistic ? (
+                                            <Clock className="h-3 w-3 animate-pulse" />
+                                          ) : (
+                                            message.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />
+                                          )
                                         )}
+                                      </div>
+                                    )}
+
+                                    {/* Failed message actions */}
+                                    {isFailed && isOwn && (
+                                      <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-red-400/30">
+                                        <button
+                                          onClick={() => handleRetryMessage(message)}
+                                          className="flex-1 px-2 py-1 text-xs bg-red-400/20 hover:bg-red-400/30 border border-red-400/50 rounded text-red-300 transition-colors"
+                                        >
+                                          Retry
+                                        </button>
+                                        <button
+                                          onClick={() => handleDeleteFailedMessage(message.id)}
+                                          className="flex-1 px-2 py-1 text-xs bg-red-400/20 hover:bg-red-400/30 border border-red-400/50 rounded text-red-300 transition-colors"
+                                        >
+                                          Delete
+                                        </button>
                                       </div>
                                     )}
                                   </div>
@@ -365,20 +530,29 @@ export default function MessagesPage() {
 
                 {/* Message Input */}
                 <form onSubmit={handleSendMessage} className="p-2.5 sm:p-3 border-t border-[#474239] light:border-[#d4caba]">
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
+                  <div className="flex gap-2 items-end">
+                    <textarea
+                      ref={textareaRef}
                       value={messageInput}
                       onChange={(e) => {
                         setMessageInput(e.target.value);
+                        handleTextareaResize();
                         // Send typing indicator when user types
                         if (selectedConversation && e.target.value.trim()) {
                           sendTypingIndicator(selectedConversation.id);
                         }
                       }}
+                      onKeyDown={(e) => {
+                        // Submit on Enter (without Shift)
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage(e);
+                        }
+                      }}
                       placeholder="Type a message..."
                       maxLength={1000}
-                      className="flex-1 px-2.5 sm:px-3 py-2 text-xs sm:text-sm bg-[#2a2723] light:bg-white border border-[#474239] light:border-[#d4caba] rounded-lg text-white light:text-black placeholder-[#6b6460] light:placeholder-[#a0958a] focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-transparent"
+                      rows={1}
+                      className="flex-1 px-2.5 sm:px-3 py-2 text-xs sm:text-sm bg-[#2a2723] light:bg-white border border-[#474239] light:border-[#d4caba] rounded-lg text-white light:text-black placeholder-[#6b6460] light:placeholder-[#a0958a] focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-transparent resize-none overflow-y-auto"
                     />
                     <button
                       type="submit"

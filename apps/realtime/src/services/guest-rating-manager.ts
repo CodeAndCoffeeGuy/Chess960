@@ -101,9 +101,9 @@ export class GuestRatingManager {
   // Update guest rating after game
   async updateGuestRating(userId: string, tc: TimeControl, opponentRating: GuestRating, result: GameResult): Promise<GuestRating> {
     await this.ensureSessionLoaded(userId);
-    
-    const currentRating = this.getGuestRating(userId, tc);
-    
+
+    const currentRating = await this.getGuestRating(userId, tc);
+
     const newRating = updateGlicko2(
       {
         rating: currentRating.rating,
@@ -155,10 +155,10 @@ export class GuestRatingManager {
   // Update guest stats
   async updateGuestStats(userId: string, result: GameResult): Promise<void> {
     await this.ensureSessionLoaded(userId);
-    
-    const stats = this.getGuestStats(userId);
+
+    const stats = await this.getGuestStats(userId);
     stats.gamesPlayed++;
-    
+
     if (result === 1) {
       stats.gamesWon++;
     } else if (result === 0) {
