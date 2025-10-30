@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../auth/[...nextauth]/route';
 import { prisma } from '@chess960/db';
+import { sendMessageNotification } from '@/lib/push-notifications';
 
 export async function POST(request: NextRequest) {
   try {
@@ -103,6 +104,16 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+
+    // Send push notification to receiver
+    try {
+      const senderName = message.sender.fullName || message.sender.handle;
+      const messagePreview = content.length > 50 ? content.substring(0, 50) + '...' : content;
+      await sendMessageNotification(receiverId, senderName, messagePreview);
+    } catch (error) {
+      console.error('Failed to send push notification for game message:', error);
+      // Don't fail the message send if push notification fails
+    }
 
     return NextResponse.json({ success: true, message });
   } catch (error) {

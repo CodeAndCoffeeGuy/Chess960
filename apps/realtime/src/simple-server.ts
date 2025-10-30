@@ -7,6 +7,7 @@ import { getTournamentManager } from './services/tournament-manager';
 import { getRandomChess960Position } from '@chess960/utils';
 import { RedisClient } from '@chess960/redis-client';
 import { RedisPubSub } from './services/redis-pubsub';
+// Push notifications removed for game events to avoid spam
 
 // Simple types
 interface User {
@@ -1036,6 +1037,9 @@ export class SimpleRealtimeServer {
     console.log('[SEND] Broadcasting move:', moveMessage);
     this.broadcastToGame(gameId, moveMessage);
 
+    // Note: Move-by-move push notifications removed to avoid spam
+    // Users can check the game when they're ready to play
+
     // Check for game end conditions (checkmate, stalemate, draw)
     if (chess.isCheckmate()) {
       const losingColor = chess.turn() === 'w' ? 'white' : 'black';
@@ -1595,6 +1599,9 @@ export class SimpleRealtimeServer {
       ratingChanges  // Include rating data
     });
 
+    // Note: Game end push notifications removed
+    // Players can check their game history when they want to see results
+
     // Clear game references from connections
     for (const [ws, connection] of this.connections.entries()) {
       if (connection.currentGameId === gameId) {
@@ -1846,6 +1853,12 @@ export class SimpleRealtimeServer {
       console.error(`[ERR] Failed to persist game ${game.id}:`, error);
     }
   }
+
+  // Removed game move push notifications to avoid spam
+  // Players can check the game when they're ready
+
+  // Removed game end push notifications
+  // Players can check their game history when they want to see results
 
   public stop() {
     if (this.matchmakingInterval) {

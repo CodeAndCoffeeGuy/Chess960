@@ -198,35 +198,68 @@ export function TournamentStructuredData({
   );
 }
 
-export function ProfileStructuredData({ handle, rating, gamesPlayed }: {
+export function PersonStructuredData({ 
+  handle, 
+  fullName, 
+  rating, 
+  gamesPlayed, 
+  country 
+}: {
   handle: string;
+  fullName?: string;
   rating: number;
   gamesPlayed: number;
+  country?: string;
 }) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://chess960.game';
 
   const structuredData = {
     '@context': 'https://schema.org',
-    '@type': 'ProfilePage',
-    mainEntity: {
-      '@type': 'Person',
-      name: handle,
-      url: `${siteUrl}/profile/${handle}`,
-      description: `Chess player profile for ${handle}`,
-      knowsAbout: 'Chess',
-      hasOccupation: {
-        '@type': 'Role',
-        hasOccupation: {
-          '@type': 'Occupation',
-          name: 'Chess Player',
-        },
+    '@type': 'Person',
+    name: fullName || handle,
+    alternateName: handle,
+    url: `${siteUrl}/profile/${handle}`,
+    description: `Chess960 player ${handle} with ${rating} rating and ${gamesPlayed} games played`,
+    knowsAbout: ['Chess', 'Chess960', 'Fischer Random Chess'],
+    hasOccupation: {
+      '@type': 'Role',
+      roleName: 'Chess Player',
+      description: 'Chess960 (Fischer Random Chess) player',
+    },
+    ...(country && {
+      address: {
+        '@type': 'PostalAddress',
+        addressCountry: country,
       },
-    },
-    about: {
-      '@type': 'Thing',
-      name: 'Chess',
-      description: `Player stats: ${rating} rating, ${gamesPlayed} games played`,
-    },
+    }),
+    sameAs: [`${siteUrl}/profile/${handle}`],
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+    />
+  );
+}
+
+export function BreadcrumbStructuredData({ items }: {
+  items: Array<{
+    name: string;
+    url: string;
+  }>;
+}) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://chess960.game';
+
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: item.url.startsWith('http') ? item.url : `${siteUrl}${item.url}`,
+    })),
   };
 
   return (

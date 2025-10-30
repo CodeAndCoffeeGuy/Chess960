@@ -20,9 +20,33 @@ export default function HomePageClient() {
   useHomepageWebSocket();
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), 100);
-    return () => clearTimeout(timer);
+    window.scrollTo(0, 0);
+    // Trigger fade-in animation
+    setTimeout(() => setIsVisible(true), 100);
   }, []);
+
+  // Handle authentication redirects
+  useEffect(() => {
+    // Only redirect if we're fully authenticated and have user data
+    if (status === 'authenticated' && session?.user) {
+      // Check if user has a handle, if not redirect to setup
+      if (!(session.user as any).handle) {
+        router.push('/auth/setup-username');
+      }
+    }
+  }, [status, session, router]);
+
+  // Show loading state while authentication is being processed
+  if (status === 'loading') {
+    return (
+      <div className="relative min-h-screen bg-[#1f1d1a] light:bg-[#f5f1ea] text-white light:text-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-[#b6aea2] light:text-[#5a5449]">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handlePlayClick = () => {
     if (status === 'unauthenticated') {
@@ -39,119 +63,120 @@ export default function HomePageClient() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1f1d1a] light:bg-[#f5f1ea] text-white light:text-black">
-      <BetaNotification />
-      
+    <div className="relative min-h-screen bg-[#1f1d1a] light:bg-[#f5f1ea] text-white light:text-black overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}>
+      {/* Background layers - Fixed for smooth scrolling */}
+      <div className="pointer-events-none fixed inset-0">
+        {/* Radial spotlight - Dark mode */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-0 md:-mt-40 h-[520px] w-[520px] rounded-full blur-3xl will-change-transform opacity-20 dark:block light:hidden"
+             style={{ background: 'radial-gradient(ellipse at center, rgba(249,115,22,0.35), rgba(234,88,12,0.15) 45%, transparent 60%)' }} />
+        {/* Radial spotlight - Light mode */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-0 md:-mt-40 h-[520px] w-[520px] rounded-full blur-3xl will-change-transform opacity-30 hidden light:block"
+             style={{ background: 'radial-gradient(ellipse at center, rgba(249,115,22,0.6), rgba(234,88,12,0.3) 45%, transparent 60%)' }} />
+        {/* Subtle grid */}
+        <div className="absolute inset-0 [mask-image:linear-gradient(to_bottom,transparent,black_15%,black_85%,transparent)]">
+          {/* Dark mode grid - white lines */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:40px_40px] light:hidden" />
+          {/* Light mode grid - black lines */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.08)_1px,transparent_1px)] bg-[size:40px_40px] hidden light:block" />
+        </div>
+
+        {/* Chess Masters - Decorative Images */}
+        {/* Bobby Fischer - Center top */}
+        <div className="absolute left-1/2 -translate-x-1/2 top-16 md:top-20 w-48 md:w-72 h-auto opacity-10 will-change-transform">
+          <Image
+            src="/bobby-fischer.png"
+            alt="Bobby Fischer"
+            width={600}
+            height={750}
+            className="object-contain"
+            priority
+          />
+        </div>
+      </div>
+
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-300/10 via-transparent to-orange-400/5"></div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 sm:pt-24 sm:pb-20">
-          <div className="text-center">
-            <h1 className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 transition-all duration-1000 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-            }`}>
-              <span className="bg-gradient-to-r from-orange-300 via-orange-400 to-orange-500 bg-clip-text text-transparent">
-                Chess960
-              </span>
-            </h1>
-            
-            <p className={`text-lg sm:text-xl md:text-2xl text-[#a0958a] light:text-[#5a5449] mb-8 max-w-3xl mx-auto transition-all duration-1000 delay-200 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-            }`}>
-              Fischer Random Chess - No opening theory, just pure chess skill
-            </p>
-            
-            <div className={`flex flex-col sm:flex-row gap-4 justify-center items-center transition-all duration-1000 delay-400 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-            }`}>
-              <button
-                onClick={handlePlayClick}
-                className="group relative px-8 py-4 bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-400 hover:to-orange-500 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-orange-400/25"
-              >
-                <span className="relative z-10">Play Now</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-500 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </button>
-              
-              <button
-                onClick={() => router.push('/leaderboard')}
-                className="px-8 py-4 border-2 border-orange-300/30 hover:border-orange-300 text-orange-300 hover:text-white hover:bg-orange-300/10 font-semibold rounded-xl transition-all duration-300"
-              >
-                View Leaderboard
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Features Section */}
-      <div className="py-16 sm:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white light:text-black mb-4">
-              Why Chess960?
-            </h2>
-            <p className="text-lg text-[#a0958a] light:text-[#5a5449] max-w-2xl mx-auto">
-              Experience chess like never before with randomized starting positions
-            </p>
+      <div className="relative min-h-screen flex items-center justify-center py-20 md:py-8">
+        <div className={`max-w-6xl mx-auto px-4 sm:px-6 text-center transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          {/* Beta Notification with Email Signup */}
+          <div className={`mb-6 sm:mb-8 transition-all duration-700 delay-100 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+            <BetaNotification />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center p-6 bg-[#2a2723] light:bg-white rounded-xl border border-[#3e3a33] light:border-[#d4caba]">
-              <div className="w-16 h-16 bg-orange-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">♔</span>
-              </div>
-              <h3 className="text-xl font-semibold text-white light:text-black mb-2">No Opening Theory</h3>
-              <p className="text-[#a0958a] light:text-[#5a5449]">
-                Every game starts fresh with randomized positions, eliminating memorized openings
-              </p>
-            </div>
+          {/* Title removed */}
+        <p className={`mt-3 sm:mt-4 text-sm sm:text-base md:text-lg text-[#b6aea2] light:text-[#5a5449] max-w-2xl mx-auto transition-all duration-700 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+          Fischer Random Chess with randomized starting positions.
+        </p>
+        <p className={`mt-2 text-sm sm:text-base md:text-lg text-[#b6aea2] light:text-[#5a5449] max-w-2xl mx-auto transition-all duration-700 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+          No opening theory, just pure chess.
+        </p>
 
-            <div className="text-center p-6 bg-[#2a2723] light:bg-white rounded-xl border border-[#3e3a33] light:border-[#d4caba]">
-              <div className="w-16 h-16 bg-orange-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">⚡</span>
-              </div>
-              <h3 className="text-xl font-semibold text-white light:text-black mb-2">Pure Skill</h3>
-              <p className="text-[#a0958a] light:text-[#5a5449]">
-                Focus on tactics, strategy, and calculation rather than memorization
-              </p>
-            </div>
-
-            <div className="text-center p-6 bg-[#2a2723] light:bg-white rounded-xl border border-[#3e3a33] light:border-[#d4caba]">
-              <div className="w-16 h-16 bg-orange-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🌍</span>
-              </div>
-              <h3 className="text-xl font-semibold text-white light:text-black mb-2">Global Competition</h3>
-              <p className="text-[#a0958a] light:text-[#5a5449]">
-                Play against players worldwide with our Glicko rating system
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Live Stats */}
-      <div className="py-16 bg-[#2a2723] light:bg-[#f5f1ea]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Live Stats */}
+        <div className={`mt-4 sm:mt-6 flex justify-center transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
           <LiveStats />
         </div>
-      </div>
 
-      {/* CTA Section */}
-      <div className="py-16 sm:py-20">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white light:text-black mb-6">
-            Ready to Play?
-          </h2>
-          <p className="text-lg text-[#a0958a] light:text-[#5a5449] mb-8">
-            Join thousands of players and discover the true essence of chess
-          </p>
-          <button
-            onClick={handlePlayClick}
-            className="px-8 py-4 bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-400 hover:to-orange-500 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-orange-400/25"
-          >
-            Start Playing Now
-          </button>
+        {/* Time Controls - Category First */}
+        <div className="mt-8 sm:mt-10 md:mt-12 max-w-4xl mx-auto">
+          {/* Speed Categories */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-48">
+            {/* Bullet */}
+            <button
+              onClick={() => {
+                setSelectedSpeed('bullet');
+                setTimeControlModalOpen(true);
+              }}
+              className={`w-full bg-gradient-to-br from-[#35322e] to-[#2a2926] light:from-white light:to-[#faf7f2] border border-[#474239] light:border-[#d4caba] hover:border-orange-300 rounded-xl p-4 sm:p-6 transition-all duration-200 hover:shadow-[0_0_20px_rgba(251,146,60,0.3)] sm:hover:scale-105 cursor-pointer ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              style={{ transitionDelay: isVisible ? '0ms' : '500ms' }}
+            >
+              <div className="text-center">
+                <div className="text-lg sm:text-xl font-bold text-white light:text-black">Bullet</div>
+              </div>
+            </button>
+
+            {/* Blitz */}
+            <button
+              onClick={() => {
+                setSelectedSpeed('blitz');
+                setTimeControlModalOpen(true);
+              }}
+              className={`w-full bg-gradient-to-br from-[#35322e] to-[#2a2926] light:from-white light:to-[#faf7f2] border border-[#474239] light:border-[#d4caba] hover:border-orange-300 rounded-xl p-4 sm:p-6 transition-all duration-200 hover:shadow-[0_0_20px_rgba(251,146,60,0.3)] sm:hover:scale-105 cursor-pointer ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              style={{ transitionDelay: isVisible ? '0ms' : '600ms' }}
+            >
+              <div className="text-center">
+                <div className="text-lg sm:text-xl font-bold text-white light:text-black">Blitz</div>
+              </div>
+            </button>
+
+            {/* Rapid */}
+            <button
+              onClick={() => {
+                setSelectedSpeed('rapid');
+                setTimeControlModalOpen(true);
+              }}
+              className={`w-full bg-gradient-to-br from-[#35322e] to-[#2a2926] light:from-white light:to-[#faf7f2] border border-[#474239] light:border-[#d4caba] hover:border-orange-300 rounded-xl p-4 sm:p-6 transition-all duration-200 hover:shadow-[0_0_20px_rgba(251,146,60,0.3)] sm:hover:scale-105 cursor-pointer ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              style={{ transitionDelay: isVisible ? '0ms' : '700ms' }}
+            >
+              <div className="text-center">
+                <div className="text-lg sm:text-xl font-bold text-white light:text-black">Rapid</div>
+              </div>
+            </button>
+
+            {/* Classical */}
+            <button
+              onClick={() => {
+                setSelectedSpeed('classical');
+                setTimeControlModalOpen(true);
+              }}
+              className={`w-full bg-gradient-to-br from-[#35322e] to-[#2a2926] light:from-white light:to-[#faf7f2] border border-[#474239] light:border-[#d4caba] hover:border-orange-300 rounded-xl p-4 sm:p-6 transition-all duration-200 hover:shadow-[0_0_20px_rgba(251,146,60,0.3)] sm:hover:scale-105 cursor-pointer ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              style={{ transitionDelay: isVisible ? '0ms' : '800ms' }}
+            >
+              <div className="text-center">
+                <div className="text-lg sm:text-xl font-bold text-white light:text-black">Classical</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
         </div>
       </div>
 
@@ -159,8 +184,8 @@ export default function HomePageClient() {
       <TimeControlModal
         isOpen={timeControlModalOpen}
         onClose={() => setTimeControlModalOpen(false)}
-        onSelect={handleTimeControlSelect}
-        selectedSpeed={selectedSpeed}
+        defaultSpeed={selectedSpeed}
+        userRating={(session?.user as any)?.rating || 1500}
       />
     </div>
   );

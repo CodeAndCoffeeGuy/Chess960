@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../../auth/[...nextauth]/route';
 import { prisma } from '@chess960/db';
 import { broadcastNotificationToUser } from '@/lib/notification-broadcast';
+import { sendChallengeNotification } from '@/lib/push-notifications';
 
 export async function POST(request: NextRequest) {
   try {
@@ -179,6 +180,16 @@ export async function POST(request: NextRequest) {
 
       // Broadcast notification in real-time
       await broadcastNotificationToUser(receiverId, notification.id);
+
+      // Send push notification
+      try {
+        const challengerName = challenge.sender.fullName || challenge.sender.handle;
+        const timeControl = `${tc} ${rated ? 'rated' : 'unrated'}`;
+        await sendChallengeNotification(receiverId, challengerName, timeControl);
+      } catch (error) {
+        console.error('Failed to send push notification for challenge:', error);
+        // Don't fail the challenge if push notification fails
+      }
     }
 
     return NextResponse.json({ success: true, challenge });

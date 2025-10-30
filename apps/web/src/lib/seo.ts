@@ -154,6 +154,7 @@ export function generateProfileSEO(handle: string, rating?: number, gamesPlayed?
     title: `${handle} - Chess960 Profile`,
     description: `View ${handle}'s Chess960 profile${stats}${games}. See game history, statistics, and achievements in Fischer Random Chess.`,
     path: `/profile/${handle}`,
+    image: `/api/og/profile/${handle}`,
     keywords: ['chess960 profile', 'chess player', handle, 'chess stats', 'chess history', 'fischer random chess'],
   });
 }
@@ -168,6 +169,7 @@ export function generateGameSEO(gameId: string, white?: string, black?: string, 
     title,
     description: `Watch or replay this Chess960 game${resultText}${timeText}. View all moves, time control, and analysis of Fischer Random Chess.`,
     path: `/game/${gameId}`,
+    image: `/api/og/game/${gameId}`,
     keywords: ['chess960 game', 'chess replay', 'chess analysis', 'fischer random chess', 'chess game'],
   });
 }

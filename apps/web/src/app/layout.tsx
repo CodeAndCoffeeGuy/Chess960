@@ -3,6 +3,7 @@ import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import './globals.css';
 import '@/styles/bullet-clock.css';
+import '@/styles/fonts.css';
 import { Navigation } from '@/components/navigation/Navigation';
 import { Footer } from '@/components/layout/Footer';
 import { PosthogProvider } from '@/components/providers/PosthogProvider';
@@ -10,6 +11,8 @@ import { SessionProvider } from '@/components/providers/SessionProvider';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { ChallengeNotifications } from '@/components/challenge/ChallengeNotifications';
 import { WebsiteStructuredData, OrganizationStructuredData } from '@/components/seo/StructuredData';
+import { PerformanceOptimizer } from '@/components/performance/PerformanceOptimizer';
+import { WebVitals } from '@/components/performance/WebVitals';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://chess960.game';
 const siteName = 'Chess960';
@@ -120,6 +123,14 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
 
+  // Preload critical resources for better LCP
+  other: {
+    'preload': [
+      { href: '/fonts/geist-sans.woff2', as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' },
+      { href: '/fonts/geist-mono.woff2', as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' },
+    ],
+  },
+
   // Canonical URL
   alternates: {
     canonical: siteUrl,
@@ -129,9 +140,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1, // Prevent zoom on mobile for better game experience
-  userScalable: false, // Disable pinch-to-zoom during gameplay
-  themeColor: '#1f1d1a', // Match our dark theme
+  maximumScale: 5, // Allow zoom for accessibility
+  userScalable: true, // Enable zoom for accessibility
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f5f1ea' },
+    { media: '(prefers-color-scheme: dark)', color: '#1f1d1a' },
+  ],
   viewportFit: 'cover', // For iPhone notch support
 };
 
@@ -143,6 +157,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`h-full dark bg-[#1f1d1a] light:bg-[#f5f1ea] ${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
       <head>
+        <PerformanceOptimizer />
+        <WebVitals />
         <WebsiteStructuredData />
         <OrganizationStructuredData />
         <script

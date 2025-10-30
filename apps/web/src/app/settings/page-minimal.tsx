@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { User, Bell, Palette, Shield, CreditCard, Key, Check, Eye, EyeOff } from 'lucide-react';
 import { ThemeSettings } from '@/components/settings/ThemeSettings';
+import { subscribeToPush, unsubscribeFromPush } from '@/lib/push';
 
 // Custom Checkbox Component
 const CustomCheckbox = ({ checked, onChange, className = '' }: { checked: boolean; onChange: (checked: boolean) => void; className?: string }) => {
@@ -47,6 +48,7 @@ export default function SettingsPage() {
 
   // Notifications
   const [pushNotifications, setPushNotifications] = useState(true);
+  const [pushSyncing, setPushSyncing] = useState(false);
   const [gameNotifications, setGameNotifications] = useState(true);
   const [tournamentNotifications, setTournamentNotifications] = useState(true);
 
@@ -437,7 +439,7 @@ export default function SettingsPage() {
                 <div className="bg-[#35322e]/50 light:bg-white/50 backdrop-blur-sm rounded-2xl border border-[#474239] light:border-[#d4caba] p-4 sm:p-5 md:p-6">
                   <h2 className="text-xl sm:text-2xl font-bold text-white light:text-black mb-4 sm:mb-6">Notification Settings</h2>
 
-                  <div className="space-y-4 sm:space-y-6">
+                    <div className="space-y-4 sm:space-y-6">
                     <div>
                       <label className="flex items-center justify-between cursor-pointer group">
                         <div className="flex-1 mr-4">
@@ -453,6 +455,27 @@ export default function SettingsPage() {
                           onChange={setPushNotifications}
                         />
                       </label>
+                        <div className="mt-2">
+                          <button
+                            type="button"
+                            disabled={pushSyncing}
+                            onClick={async () => {
+                              setPushSyncing(true);
+                              try {
+                                if (pushNotifications) {
+                                  await subscribeToPush();
+                                } else {
+                                  await unsubscribeFromPush();
+                                }
+                              } finally {
+                                setPushSyncing(false);
+                              }
+                            }}
+                            className="px-3 py-1.5 text-xs border border-[#474239] light:border-[#d4caba] rounded hover:bg-[#2a2723] light:hover:bg-[#f5f1ea]"
+                          >
+                            {pushSyncing ? 'Syncing…' : 'Sync device'}
+                          </button>
+                        </div>
                     </div>
 
                     <div className="border-t border-[#3e3a33] light:border-[#d4caba] pt-4 sm:pt-6">
