@@ -28,8 +28,8 @@ export async function GET(
         },
         _count: {
           select: {
-            gamesAsWhite: true,
-            gamesAsBlack: true,
+            whiteGames: true,
+            blackGames: true,
           },
         },
       },
@@ -67,7 +67,7 @@ export async function GET(
     }
 
     const topRating = user.ratings[0]?.rating || 1500;
-    const gamesPlayed = user._count.gamesAsWhite + user._count.gamesAsBlack;
+    const gamesPlayed = user._count.whiteGames + user._count.blackGames;
     const displayName = user.fullName || user.handle;
 
     return new ImageResponse(

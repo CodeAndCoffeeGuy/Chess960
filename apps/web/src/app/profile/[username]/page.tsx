@@ -27,8 +27,8 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
         },
         _count: {
           select: {
-            gamesAsWhite: true,
-            gamesAsBlack: true,
+            whiteGames: true,
+            blackGames: true,
           },
         },
       },
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
       return generateProfileSEO(username);
     }
 
-    const gamesPlayed = user._count.gamesAsWhite + user._count.gamesAsBlack;
+    const gamesPlayed = user._count.whiteGames + user._count.blackGames;
     const topRating = user.ratings[0]?.rating || 1500;
 
     return generateProfileSEO(user.handle, topRating, gamesPlayed);
