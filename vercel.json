@@ -1,6 +1,6 @@
 {
   "buildCommand": "pnpm build:web",
-  "installCommand": "pnpm install --frozen-lockfile --shamefully-hoist",
+  "installCommand": "pnpm install --no-frozen-lockfile --shamefully-hoist",
   "framework": "nextjs",
   "outputDirectory": "apps/web/.next"
 }
