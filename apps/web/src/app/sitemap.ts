@@ -81,22 +81,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const topUsers = await prisma.user.findMany({
       where: {
         handle: { not: null },
-        isActive: true,
+        deletedAt: null,
       },
       select: {
         handle: true,
-        updatedAt: true,
+        lastActivityAt: true,
+        createdAt: true,
       },
-      orderBy: {
-        updatedAt: 'desc',
-      },
+      orderBy: [
+        { lastActivityAt: 'desc' },
+        { createdAt: 'desc' },
+      ],
       take: 1000,
     });
 
     // Add user profile routes
     const userRoutes = topUsers.map((user) => ({
       url: `${baseUrl}/profile/${user.handle}`,
-      lastModified: user.updatedAt,
+      lastModified: user.lastActivityAt ?? user.createdAt,
       changeFrequency: 'weekly' as const,
       priority: 0.6,
     }));
@@ -108,19 +110,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       },
       select: {
         id: true,
-        updatedAt: true,
         status: true,
+        startsAt: true,
+        endsAt: true,
+        createdAt: true,
       },
-      orderBy: {
-        updatedAt: 'desc',
-      },
+      orderBy: [
+        { endsAt: 'desc' },
+        { startsAt: 'desc' },
+        { createdAt: 'desc' },
+      ],
       take: 100,
     });
 
     // Add tournament routes
     const tournamentRoutes = recentTournaments.map((tournament) => ({
       url: `${baseUrl}/tournaments/${tournament.id}`,
-      lastModified: tournament.updatedAt,
+      lastModified: tournament.endsAt ?? tournament.startsAt ?? tournament.createdAt,
       changeFrequency: tournament.status === 'LIVE' ? 'hourly' as const : 'daily' as const,
       priority: tournament.status === 'LIVE' ? 0.8 : 0.7,
     }));
@@ -128,14 +134,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Get recent games (last 500)
     const recentGames = await prisma.game.findMany({
       where: {
-        status: 'FINISHED',
+        endedAt: { not: null },
       },
       select: {
         id: true,
-        updatedAt: true,
+        endedAt: true,
       },
       orderBy: {
-        updatedAt: 'desc',
+        endedAt: 'desc',
       },
       take: 500,
     });
@@ -143,7 +149,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Add game routes
     const gameRoutes = recentGames.map((game) => ({
       url: `${baseUrl}/game/${game.id}`,
-      lastModified: game.updatedAt,
+      lastModified: game.endedAt!,
       changeFrequency: 'monthly' as const,
       priority: 0.5,
     }));

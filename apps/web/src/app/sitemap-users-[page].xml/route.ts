@@ -19,15 +19,17 @@ export async function GET(
     const users = await prisma.user.findMany({
       where: {
         handle: { not: null },
-        isActive: true,
+        deletedAt: null,
       },
       select: {
         handle: true,
-        updatedAt: true,
+        lastActivityAt: true,
+        createdAt: true,
       },
-      orderBy: {
-        updatedAt: 'desc',
-      },
+      orderBy: [
+        { lastActivityAt: 'desc' },
+        { createdAt: 'desc' },
+      ],
       skip,
       take: usersPerPage,
     });
@@ -37,7 +39,7 @@ export async function GET(
   ${users.map(user => `
   <url>
     <loc>${baseUrl}/profile/${user.handle}</loc>
-    <lastmod>${user.updatedAt.toISOString()}</lastmod>
+    <lastmod>${(user.lastActivityAt ?? user.createdAt).toISOString()}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>`).join('')}
