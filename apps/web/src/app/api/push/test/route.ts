@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../auth/[...nextauth]/route';
 import { prisma } from '@chess960/db';
-import webpush from 'web-push';
+export const runtime = 'nodejs';
 
 function getVapidConfig() {
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -24,6 +24,7 @@ export async function POST(_request: NextRequest) {
       return NextResponse.json({ error: 'Server VAPID keys not configured' }, { status: 500 });
     }
 
+    const { default: webpush } = await import('web-push');
     webpush.setVapidDetails(vapid.subject, vapid.publicKey, vapid.privateKey);
 
     const subs = await prisma.pushSubscription.findMany({ where: { userId: session.user.id } });

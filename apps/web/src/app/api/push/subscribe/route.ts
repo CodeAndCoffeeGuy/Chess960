@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../../auth/[...nextauth]/route';
 import { prisma } from '@chess960/db';
 
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);

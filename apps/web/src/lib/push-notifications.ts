@@ -1,5 +1,5 @@
+import 'server-only';
 import { prisma } from '@chess960/db';
-import webpush from 'web-push';
 
 function getVapidConfig() {
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -30,6 +30,7 @@ export async function sendPushNotification(
     const vapid = getVapidConfig();
     if (!vapid) return false;
 
+    const { default: webpush } = await import('web-push');
     webpush.setVapidDetails(vapid.subject, vapid.publicKey, vapid.privateKey);
 
     // Get user's push subscriptions
