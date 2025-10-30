@@ -140,11 +140,11 @@ export const RealtimeAnalysisPanel: React.FC<RealtimeAnalysisPanelProps> = ({
     }
   }, []);
 
-  const getEvaluationColor = (eval: number): string => {
-    if (eval > 100) return 'text-green-400';
-    if (eval > 50) return 'text-green-300';
-    if (eval > -50) return 'text-gray-300';
-    if (eval > -100) return 'text-red-300';
+  const getEvaluationColor = (evaluation: number): string => {
+    if (evaluation > 100) return 'text-green-400';
+    if (evaluation > 50) return 'text-green-300';
+    if (evaluation > -50) return 'text-gray-300';
+    if (evaluation > -100) return 'text-red-300';
     return 'text-red-400';
   };
 
