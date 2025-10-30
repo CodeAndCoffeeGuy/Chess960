@@ -51,11 +51,11 @@ export function BetaNotification({ className = '' }: BetaNotificationProps) {
         }
       } else {
         setStatus('error');
-        setMessage(data.error || 'Something went wrong. Please try again.');
+        setMessage(data.error || 'Error!');
       }
     } catch {
       setStatus('error');
-      setMessage('Network error. Please check your connection and try again.');
+      setMessage('Network error!');
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +76,7 @@ export function BetaNotification({ className = '' }: BetaNotificationProps) {
         </div>
 
         {/* Email Signup Form */}
-        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto relative">
           <div className="relative flex-1 sm:flex-none sm:w-64">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -93,10 +93,35 @@ export function BetaNotification({ className = '' }: BetaNotificationProps) {
           <button
             type="submit"
             disabled={isLoading || !email.trim()}
-            className="px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white text-sm font-bold rounded-lg transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:hover:scale-100 disabled:hover:shadow-none shadow-md whitespace-nowrap"
+            className={`px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200 sm:hover:shadow-lg sm:hover:scale-105 disabled:hover:scale-100 disabled:hover:shadow-none shadow-md whitespace-nowrap w-full sm:w-32 flex-shrink-0 overflow-hidden ${
+              status === 'success' || status === 'already-exists'
+                ? 'bg-green-200/25 text-green-200 border border-green-200/40 sm:bg-gradient-to-r sm:from-gray-500 sm:to-gray-600 sm:text-white sm:border-0 sm:hover:from-gray-600 sm:hover:to-gray-700'
+                : status === 'error'
+                ? 'bg-red-500/20 text-red-300 border border-red-400/30 sm:bg-gradient-to-r sm:from-gray-500 sm:to-gray-600 sm:text-white sm:border-0 sm:hover:from-gray-600 sm:hover:to-gray-700'
+                : 'bg-gradient-to-r from-gray-500 to-gray-600 text-white hover:from-gray-600 hover:to-gray-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed'
+            }`}
           >
             {isLoading ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
+            ) : status === 'success' || status === 'already-exists' || status === 'error' ? (
+              <>
+                {/* Mobile: Show message in button */}
+                <div className="flex items-center justify-center gap-2 w-full sm:hidden">
+                  {(status === 'success' || status === 'already-exists') && (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                  {status === 'error' && (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  )}
+                  <span>{message}</span>
+                </div>
+                {/* Desktop: Keep showing "Notify Me" */}
+                <span className="hidden sm:inline">Notify Me</span>
+              </>
             ) : (
               'Notify Me'
             )}
@@ -104,35 +129,33 @@ export function BetaNotification({ className = '' }: BetaNotificationProps) {
         </form>
       </div>
 
-      {/* Status Message */}
-      {status !== 'idle' && (
-        <div className={`absolute top-full left-0 right-0 mt-2 p-3 rounded-lg text-sm font-medium transition-all duration-300 ${
-          status === 'success'
-            ? 'bg-gray-500/20 border border-gray-400/40 text-white light:text-gray-800'
-            : status === 'already-exists'
-            ? 'bg-gray-500/20 border border-gray-400/40 text-white light:text-gray-800'
-            : 'bg-gray-500/20 border border-gray-400/40 text-white light:text-gray-800'
-        }`}>
-          <div className="flex items-center justify-center gap-2">
-            {status === 'success' && (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            )}
-            {status === 'error' && (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            )}
-            {status === 'already-exists' && (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            )}
-            <span>{message}</span>
+      {/* Reserve space for message below on desktop */}
+      <div className="hidden sm:block h-12" />
+
+      {/* Status message below form - Desktop only */}
+      <div className="hidden sm:block absolute bottom-0 left-1/2 -translate-x-1/2">
+        {message && (status === 'success' || status === 'already-exists' || status === 'error') && (
+          <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium ${
+              status === 'success' || status === 'already-exists'
+                ? 'bg-green-200/25 text-green-200 border border-green-200/40'
+                : 'bg-red-500/20 text-red-300 border border-red-400/30'
+            }`}>
+              {(status === 'success' || status === 'already-exists') && (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+              {status === 'error' && (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              )}
+              <span>{message}</span>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
