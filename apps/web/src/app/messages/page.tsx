@@ -8,6 +8,7 @@ import { groupMessages, type MessageGroup } from '@/lib/message-grouping';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { throttle, debounce } from '@/lib/throttle';
 import { getDraft, saveDraft, clearDraft } from '@/lib/message-drafts';
+import { renderMessageContent } from '@/lib/message-render';
 
 interface User {
   id: string;
@@ -57,6 +58,8 @@ export default function MessagesPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<User | null>(null);
   const [messages, setMessages] = useState<OptimisticMessage[]>([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
   const [messageInput, setMessageInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -126,11 +129,16 @@ export default function MessagesPage() {
       } else {
         userScrolledUp.current = false;
       }
+
+      // Load older when near top
+      if (container.scrollTop < 80 && hasMore && !loadingOlder) {
+        loadOlder();
+      }
     };
 
     container.addEventListener('scroll', handleScroll);
     return () => container.removeEventListener('scroll', handleScroll);
-  }, [isNearBottom]);
+  }, [isNearBottom, hasMore, loadingOlder, selectedConversation, messages]);
 
   // WebSocket: Listen for typing events
   useEffect(() => {
@@ -258,12 +266,29 @@ export default function MessagesPage() {
     }
   };
 
-  const fetchMessages = async (userId: string) => {
+  const fetchMessages = async (userId: string, before?: string, appendTop = false) => {
     try {
-      const response = await fetch(`/api/messages/${userId}`);
+      const qs = new URLSearchParams();
+      qs.set('limit', '50');
+      if (before) qs.set('before', before);
+      const response = await fetch(`/api/messages/${userId}?${qs.toString()}`);
       if (response.ok) {
         const data = await response.json();
-        setMessages(data.messages);
+        if (appendTop) {
+          const container = messagesContainerRef.current;
+          const prevScrollHeight = container?.scrollHeight || 0;
+          setMessages(prev => [...data.messages, ...prev]);
+          setHasMore(!!data.hasMore);
+          setTimeout(() => {
+            if (container) {
+              const newScrollHeight = container.scrollHeight;
+              container.scrollTop = newScrollHeight - prevScrollHeight;
+            }
+          }, 0);
+        } else {
+          setMessages(data.messages);
+          setHasMore(!!data.hasMore);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch messages:', error);
@@ -273,6 +298,15 @@ export default function MessagesPage() {
   const handleSelectConversation = (user: User) => {
     setSelectedConversation(user);
     fetchMessages(user.id);
+  };
+
+  const loadOlder = async () => {
+    if (!selectedConversation || loadingOlder || !hasMore || messages.length === 0) return;
+    setLoadingOlder(true);
+    const oldest = messages[0];
+    const before = oldest.createdAt;
+    await fetchMessages(selectedConversation.id, before, true);
+    setLoadingOlder(false);
   };
 
   const handleRetryMessage = async (failedMessage: OptimisticMessage) => {
@@ -485,6 +519,18 @@ export default function MessagesPage() {
                     <p className="text-[#a0958a] light:text-[#5a5449] text-center py-8 text-sm">No messages yet. Start the conversation!</p>
                   ) : (
                     <div className="flex flex-col">
+                      {/* Load more button at top */}
+                      {hasMore && (
+                        <div className="flex justify-center mb-3">
+                          <button
+                            disabled={loadingOlder}
+                            onClick={loadOlder}
+                            className="px-3 py-1 text-xs bg-[#2a2723] light:bg-[#f5f1ea] border border-[#3e3a33] light:border-[#d4caba] rounded text-[#a0958a] light:text-[#5a5449] hover:text-white hover:bg-[#33302c] disabled:opacity-60"
+                          >
+                            {loadingOlder ? 'Loading…' : 'Load more'}
+                          </button>
+                        </div>
+                      )}
                       {groupMessages(messages).map((dayGroup: MessageGroup) => (
                         <div key={dayGroup.dateString} className="mb-6 last:mb-0">
                           {/* Date Separator */}
@@ -537,7 +583,17 @@ export default function MessagesPage() {
                                       ${isOptimistic ? 'transition-opacity' : ''}
                                     `}
                                   >
-                                    <p className="text-xs sm:text-sm break-words">{message.content}</p>
+                                    {(() => {
+                                      const rendered = renderMessageContent(message.content);
+                                      return (
+                                        <div className="text-xs sm:text-sm break-words">
+                                          {rendered.nodes}
+                                          {rendered.embeds.length > 0 && (
+                                            <div className="mt-1 space-y-1">{rendered.embeds}</div>
+                                          )}
+                                        </div>
+                                      );
+                                    })()}
 
                                     {/* Only show timestamp on last message in group */}
                                     {message.showTimestamp && (

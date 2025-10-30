@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
+import { renderMessageContent } from '@/lib/message-render';
 
 export interface TournamentChatMessage {
   id?: string;
@@ -86,6 +87,7 @@ export function TournamentChat({ tournamentId, currentUserId, messages, onSendMe
         ) : (
           allMessages.map((msg, idx) => {
             const isMe = msg.userId === currentUserId;
+            const rendered = renderMessageContent(msg.message);
             return (
               <div key={msg.id || `msg-${idx}`} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] ${isMe ? 'items-end' : 'items-start'} flex flex-col`}>
@@ -98,7 +100,10 @@ export function TournamentChat({ tournamentId, currentUserId, messages, onSendMe
                       ? 'bg-orange-600/30 text-orange-100 border border-orange-500/30'
                       : 'bg-[#35322e] text-gray-200 border border-[#474239]'
                   }`}>
-                    {msg.message}
+                    <div className="break-words">{rendered.nodes}</div>
+                    {rendered.embeds.length > 0 && (
+                      <div className="mt-2 space-y-1">{rendered.embeds}</div>
+                    )}
                   </div>
                 </div>
               </div>

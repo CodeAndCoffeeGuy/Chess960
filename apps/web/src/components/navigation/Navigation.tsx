@@ -26,7 +26,12 @@ export function Navigation() {
   const [mobileTournamentsOpen, setMobileTournamentsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchExpanded, setSearchExpanded] = useState(false);
-  const [searchResults, setSearchResults] = useState<Array<{ handle: string }>>([]);
+  type SearchBuckets = {
+    discussions: Array<{ handle: string; userId: string }>;
+    following: Array<{ handle: string; userId: string }>;
+    players: Array<{ handle: string }>;
+  };
+  const [searchResults, setSearchResults] = useState<SearchBuckets>({ discussions: [], following: [], players: [] });
   const [showResults, setShowResults] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [timeControlModalOpen, setTimeControlModalOpen] = useState(false);
@@ -38,9 +43,15 @@ export function Navigation() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // If a result is selected via keyboard, navigate to it
-    if (selectedIndex >= 0 && selectedIndex < searchResults.length) {
-      window.location.href = `/profile/${searchResults[selectedIndex].handle}`;
+    // Flatten for keyboard navigation
+    const flat: Array<{ type: keyof SearchBuckets; handle: string; userId?: string }> = [
+      ...searchResults.discussions.map(r => ({ type: 'discussions' as const, handle: r.handle, userId: r.userId })),
+      ...searchResults.following.map(r => ({ type: 'following' as const, handle: r.handle, userId: r.userId })),
+      ...searchResults.players.map(r => ({ type: 'players' as const, handle: r.handle })),
+    ];
+
+    if (selectedIndex >= 0 && selectedIndex < flat.length) {
+      window.location.href = `/profile/${flat[selectedIndex].handle}`;
       setSearchQuery('');
       setSearchExpanded(false);
       setShowResults(false);
@@ -56,13 +67,12 @@ export function Navigation() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!showResults || searchResults.length === 0) return;
+    const flatLen = searchResults.discussions.length + searchResults.following.length + searchResults.players.length;
+    if (!showResults || flatLen === 0) return;
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setSelectedIndex((prev) =>
-        prev < searchResults.length - 1 ? prev + 1 : prev
-      );
+      setSelectedIndex((prev) => (prev < flatLen - 1 ? prev + 1 : prev));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
@@ -72,20 +82,39 @@ export function Navigation() {
     }
   };
 
-  const searchUsers = async (query: string) => {
+  const searchAll = async (query: string) => {
     if (query.length < 3) {
-      setSearchResults([]);
+      setSearchResults({ discussions: [], following: [], players: [] });
       setShowResults(false);
       return;
     }
 
     try {
-      const response = await fetch(`/api/user/search?q=${encodeURIComponent(query)}`);
-      if (response.ok) {
-        const users = await response.json();
-        setSearchResults(users);
-        setShowResults(true);
-      }
+      const [playersRes, convRes, follRes] = await Promise.all([
+        fetch(`/api/user/search?q=${encodeURIComponent(query)}`),
+        fetch('/api/messages/conversations'),
+        fetch('/api/follow/list'),
+      ]);
+
+      const players: Array<{ handle: string }> = playersRes.ok ? await playersRes.json() : [];
+      const convJson = convRes.ok ? await convRes.json() : { conversations: [] };
+      const conversations: Array<{ user: { id: string; handle: string } }>= convJson.conversations || [];
+      const followingJson = follRes.ok ? await follRes.json() : { following: [] };
+      const following: Array<{ id: string; handle: string }> = followingJson.following || [];
+
+      const q = query.toLowerCase();
+      const discussions = conversations
+        .filter(c => c.user.handle.toLowerCase().includes(q))
+        .slice(0, 5)
+        .map(c => ({ handle: c.user.handle, userId: c.user.id }));
+      const followingRes = following
+        .filter(f => f.handle.toLowerCase().includes(q))
+        .slice(0, 5)
+        .map(f => ({ handle: f.handle, userId: f.id }));
+      const playersResSlice = players.slice(0, 10);
+
+      setSearchResults({ discussions, following: followingRes, players: playersResSlice });
+      setShowResults(true);
     } catch (error) {
       console.error('Search error:', error);
     }
@@ -94,9 +123,9 @@ export function Navigation() {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (searchQuery) {
-        searchUsers(searchQuery);
+        searchAll(searchQuery);
       }
-    }, 300);
+    }, 500);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
@@ -319,25 +348,38 @@ export function Navigation() {
                 <Search className="h-5 w-5" />
               </button>
 
-              {showResults && searchResults.length > 0 && (
+              {showResults && (searchResults.discussions.length + searchResults.following.length + searchResults.players.length) > 0 && (
                 <div className="absolute right-10 mt-2 w-48 bg-[#2a2926] light:bg-white border border-[#454038] light:border-[#d4caba] rounded-lg shadow-lg z-20 py-1 max-h-64 overflow-y-auto">
-                  {searchResults.map((result, index) => (
-                    <Link
-                      key={result.handle}
-                      href={`/profile/${result.handle}`}
-                      className={`block px-4 py-2 text-white transition-colors ${
-                        index === selectedIndex ? 'bg-orange-300/20 border-l-2 border-orange-300' : 'hover:bg-[#33302c]'
-                      }`}
-                      onClick={() => {
-                        setSearchExpanded(false);
-                        setShowResults(false);
-                        setSearchQuery('');
-                        setSelectedIndex(-1);
-                      }}
-                    >
-                      {result.handle}
-                    </Link>
-                  ))}
+                  {(['discussions','following','players'] as const).map((section) => {
+                    const list = searchResults[section];
+                    if (list.length === 0) return null;
+                    const startIndexOffset = section === 'discussions' ? 0 : section === 'following' ? searchResults.discussions.length : searchResults.discussions.length + searchResults.following.length;
+                    return (
+                      <div key={section}>
+                        <div className="px-4 py-1 text-[10px] uppercase tracking-wide text-[#a0958a] light:text-[#5a5449]">{section}</div>
+                        {list.map((result, idx) => {
+                          const index = startIndexOffset + idx;
+                          return (
+                            <Link
+                              key={`${section}-${result.handle}-${idx}`}
+                              href={`/profile/${result.handle}`}
+                              className={`block px-4 py-2 text-white transition-colors ${
+                                index === selectedIndex ? 'bg-orange-300/20 border-l-2 border-orange-300' : 'hover:bg-[#33302c]'
+                              }`}
+                              onClick={() => {
+                                setSearchExpanded(false);
+                                setShowResults(false);
+                                setSearchQuery('');
+                                setSelectedIndex(-1);
+                              }}
+                            >
+                              {result.handle}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
