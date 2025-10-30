@@ -7,9 +7,9 @@ export async function GET(request: NextRequest) {
   try {
     // Get counts for pagination
     const [userCount, tournamentCount, gameCount] = await Promise.all([
-      prisma.user.count({ where: { handle: { not: null }, isActive: true } }),
+      prisma.user.count({ where: { handle: { not: null }, deletedAt: null } }),
       prisma.tournament.count({ where: { status: { in: ['UPCOMING', 'LIVE', 'FINISHED'] } } }),
-      prisma.game.count({ where: { status: 'FINISHED' } }),
+      prisma.game.count({ where: { endedAt: { not: null } } }),
     ]);
 
     const usersPerSitemap = 1000;
