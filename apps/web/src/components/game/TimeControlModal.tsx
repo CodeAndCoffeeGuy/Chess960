@@ -121,30 +121,30 @@ export function TimeControlModal({ isOpen, onClose, defaultSpeed = 'bullet', use
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
-        className="bg-[#2a2723] light:bg-white border-2 border-[#474239] light:border-[#d4caba] rounded-2xl shadow-2xl max-w-lg w-full p-5 animate-in zoom-in-95 duration-200"
+        className="bg-[#2a2723] light:bg-white border-2 border-[#474239] light:border-[#d4caba] rounded-xl sm:rounded-2xl shadow-2xl max-w-lg w-full p-4 sm:p-5 animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-white light:text-black">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <h2 className="text-lg sm:text-xl font-bold text-white light:text-black">
             Game Setup
           </h2>
           <button
             onClick={onClose}
-            className="p-2 text-[#a0958a] light:text-[#5a5449] hover:text-white light:hover:text-black hover:bg-[#35322e] light:hover:bg-[#f0ebe0] rounded-lg transition-colors"
+            className="p-1.5 sm:p-2 text-[#a0958a] light:text-[#5a5449] hover:text-white light:hover:text-black hover:bg-[#35322e] light:hover:bg-[#f0ebe0] rounded-lg transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
         {/* Time Control Display */}
-        <div className="mb-4 bg-[#35322e] light:bg-[#faf7f2] border border-[#474239] light:border-[#d4caba] rounded-lg p-3 text-center">
+        <div className="mb-3 sm:mb-4 bg-[#35322e] light:bg-[#faf7f2] border border-[#474239] light:border-[#d4caba] rounded-lg p-2.5 sm:p-3 text-center">
           <div className="text-xs text-[#a0958a] light:text-[#5a5449] mb-1">Time Control</div>
-          <div className="font-mono text-3xl font-bold text-white light:text-black">{timeControl}</div>
+          <div className="font-mono text-2xl sm:text-3xl font-bold text-white light:text-black">{timeControl}</div>
           <div className={`text-sm font-semibold capitalize mt-1 ${speedColors[actualSpeed]}`}>
             {actualSpeed}
           </div>
@@ -156,8 +156,8 @@ export function TimeControlModal({ isOpen, onClose, defaultSpeed = 'bullet', use
         </div>
 
         {/* Minutes Slider */}
-        <div className="mb-4">
-          <label className="block text-sm font-semibold text-[#a0958a] light:text-[#5a5449] mb-2">
+        <div className="mb-3 sm:mb-4">
+          <label className="block text-xs sm:text-sm font-semibold text-[#a0958a] light:text-[#5a5449] mb-1.5 sm:mb-2">
             Time: {minutes < 1 ? `${totalSeconds} sec` : `${Math.round(minutes)} min`}
           </label>
           <input
@@ -176,8 +176,8 @@ export function TimeControlModal({ isOpen, onClose, defaultSpeed = 'bullet', use
         </div>
 
         {/* Increment Slider */}
-        <div className="mb-4">
-          <label className="block text-sm font-semibold text-[#a0958a] light:text-[#5a5449] mb-2">
+        <div className="mb-3 sm:mb-4">
+          <label className="block text-xs sm:text-sm font-semibold text-[#a0958a] light:text-[#5a5449] mb-1.5 sm:mb-2">
             Increment: {increment} sec
           </label>
           <input
@@ -192,30 +192,30 @@ export function TimeControlModal({ isOpen, onClose, defaultSpeed = 'bullet', use
         </div>
 
         {/* Rated Toggle */}
-        <div className="mb-4 bg-[#35322e] light:bg-[#faf7f2] border border-[#474239] light:border-[#d4caba] rounded-lg p-3">
+        <div className="mb-3 sm:mb-4 bg-[#35322e] light:bg-[#faf7f2] border border-[#474239] light:border-[#d4caba] rounded-lg p-2.5 sm:p-3">
           <button
             onClick={() => setIsRated(!isRated)}
             className="w-full flex items-center justify-between"
           >
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <input
                 type="checkbox"
                 checked={isRated}
                 onChange={() => setIsRated(!isRated)}
                 onClick={(e) => e.stopPropagation()}
-                className="w-5 h-5 text-orange-300 bg-[#2b2824] light:bg-white border-[#4a453e] light:border-[#d4caba] rounded focus:ring-orange-300 light:focus:ring-[#ffa366] focus:ring-2 accent-orange-300 light:accent-[#ffa366]"
+                className="w-4 h-4 sm:w-5 sm:h-5 text-orange-300 bg-[#2b2824] light:bg-white border-[#4a453e] light:border-[#d4caba] rounded focus:ring-orange-300 light:focus:ring-[#ffa366] focus:ring-2 accent-orange-300 light:accent-[#ffa366]"
               />
-              <span className="font-semibold text-white light:text-black">Rated</span>
+              <span className="text-sm sm:text-base font-semibold text-white light:text-black">Rated</span>
             </div>
-            <span className="text-sm text-[#a0958a] light:text-[#5a5449]">
+            <span className="text-xs sm:text-sm text-[#a0958a] light:text-[#5a5449]">
               {isRated ? 'Affects rating' : 'Casual play'}
             </span>
           </button>
         </div>
 
         {/* Rating Range */}
-        <div className="mb-4">
-          <label className="block text-sm font-semibold text-[#a0958a] light:text-[#5a5449] mb-2">
+        <div className="mb-3 sm:mb-4">
+          <label className="block text-xs sm:text-sm font-semibold text-[#a0958a] light:text-[#5a5449] mb-1.5 sm:mb-2">
             Rating Range: ±{ratingRange}
           </label>
           <input
@@ -230,29 +230,29 @@ export function TimeControlModal({ isOpen, onClose, defaultSpeed = 'bullet', use
         </div>
 
         {/* Action Buttons */}
-        <div className="flex space-x-3">
+        <div className="flex space-x-2 sm:space-x-3">
           <button
             onClick={handleQuickPlay}
-            className="flex-1 bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-400 hover:to-orange-500 text-white font-bold py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-[0_0_20px_rgba(251,146,60,0.4)] hover:scale-105"
+            className="flex-1 bg-gradient-to-r from-orange-300 to-orange-400 hover:from-orange-400 hover:to-orange-500 text-white font-bold py-2.5 sm:py-3 text-sm sm:text-base rounded-lg transition-all duration-200 shadow-lg hover:shadow-[0_0_20px_rgba(251,146,60,0.4)] sm:hover:scale-105"
           >
             Play
           </button>
           <button
             onClick={handleCreateLobby}
-            className="flex-1 bg-[#35322e] light:bg-[#faf7f2] border-2 border-[#474239] light:border-[#d4caba] text-white light:text-black font-bold py-3 rounded-lg transition-all duration-200 hover:border-orange-300"
+            className="flex-1 bg-[#35322e] light:bg-[#faf7f2] border-2 border-[#474239] light:border-[#d4caba] text-white light:text-black font-bold py-2.5 sm:py-3 text-sm sm:text-base rounded-lg transition-all duration-200 hover:border-orange-300"
           >
             Create Lobby
           </button>
         </div>
 
         {/* Lobby Link */}
-        <div className="mt-3 text-center">
+        <div className="mt-2.5 sm:mt-3 text-center">
           <button
             onClick={() => {
               router.push('/lobby');
               onClose();
             }}
-            className="text-sm text-orange-300 hover:text-orange-200 underline"
+            className="text-xs sm:text-sm text-orange-300 hover:text-orange-200 underline"
           >
             View all lobbies
           </button>

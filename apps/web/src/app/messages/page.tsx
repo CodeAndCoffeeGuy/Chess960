@@ -1,9 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { MessageSquare, Send, Users, Check, CheckCheck } from 'lucide-react';
+import { groupMessages, type MessageGroup } from '@/lib/message-grouping';
+import { useWebSocket } from '@/hooks/useWebSocket';
+import { throttle } from '@/lib/throttle';
 
 interface User {
   id: string;
@@ -23,6 +26,18 @@ interface Message {
   receiver: User;
 }
 
+interface GroupedMessage extends Message {
+  isFirstInGroup: boolean;
+  isLastInGroup: boolean;
+  showTimestamp: boolean;
+}
+
+interface TypingState {
+  userId: string;
+  handle: string;
+  timeout: NodeJS.Timeout;
+}
+
 interface Conversation {
   user: User;
   lastMessage: Message;
@@ -32,6 +47,7 @@ interface Conversation {
 export default function MessagesPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { on, isConnected } = useWebSocket();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<User | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -39,6 +55,7 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [following, setFollowing] = useState<User[]>([]);
+  const [typingState, setTypingState] = useState<TypingState | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -54,6 +71,58 @@ export default function MessagesPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // WebSocket: Listen for typing events
+  useEffect(() => {
+    if (!isConnected) return;
+
+    const unsubscribe = on('message.typing', (data: any) => {
+      // Only show typing indicator if it's from the current conversation partner
+      if (selectedConversation && data.userId === selectedConversation.id) {
+        // Clear existing timeout if any
+        if (typingState?.timeout) {
+          clearTimeout(typingState.timeout);
+        }
+
+        // Set new typing state with 3-second timeout
+        const timeout = setTimeout(() => {
+          setTypingState(null);
+        }, 3000);
+
+        setTypingState({
+          userId: data.userId,
+          handle: data.handle || selectedConversation.handle,
+          timeout,
+        });
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      // Clean up timeout on unmount
+      if (typingState?.timeout) {
+        clearTimeout(typingState.timeout);
+      }
+    };
+  }, [isConnected, on, selectedConversation, typingState]);
+
+  // Throttled function to send typing indicator (max once per 3 seconds)
+  const sendTypingIndicator = useMemo(
+    () =>
+      throttle((userId: string) => {
+        if (!isConnected || !messageInput.trim()) return;
+
+        // Send typing event via WebSocket
+        fetch('/api/messages/typing', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ receiverId: userId }),
+        }).catch((error) => {
+          console.error('Failed to send typing indicator:', error);
+        });
+      }, 3000),
+    [isConnected, messageInput]
+  );
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -139,13 +208,13 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1f1d1a] light:bg-[#f5f1ea] text-white light:text-black py-4 sm:py-6 md:py-8">
+    <div className="min-h-screen bg-[#1f1d1a] light:bg-[#f5f1ea] text-white light:text-black py-3 sm:py-4 md:py-8">
       <div className="max-w-7xl mx-auto px-3 sm:px-4">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-orange-300 to-orange-400 bg-clip-text text-transparent mb-4 sm:mb-6 md:mb-8">
+        <h1 className="text-xl sm:text-2xl md:text-4xl font-bold bg-gradient-to-r from-orange-300 to-orange-400 bg-clip-text text-transparent mb-3 sm:mb-4 md:mb-8">
           Messages
         </h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           {/* Following List */}
           <div className="lg:col-span-1">
             <div className="bg-[#35322e] light:bg-white rounded-xl border border-[#474239] light:border-[#d4caba] p-3 sm:p-4">
@@ -208,37 +277,90 @@ export default function MessagesPage() {
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2">
+                <div className="flex-1 overflow-y-auto p-3 sm:p-4">
                   {messages.length === 0 ? (
                     <p className="text-[#a0958a] light:text-[#5a5449] text-center py-8 text-sm">No messages yet. Start the conversation!</p>
                   ) : (
-                    messages.map((message) => {
-                      const isOwn = message.senderId === session?.user?.id;
-                      return (
-                        <div
-                          key={message.id}
-                          className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
-                        >
-                          <div
-                            className={`max-w-[85%] sm:max-w-[75%] rounded-lg px-2.5 sm:px-3 py-2 ${
-                              isOwn
-                                ? 'bg-orange-400 text-white'
-                                : 'bg-[#2a2723] light:bg-[#f5f1ea] text-white light:text-black border border-[#3e3a33] light:border-[#d4caba]'
-                            }`}
-                          >
-                            <p className="text-xs sm:text-sm break-words">{message.content}</p>
-                            <div className={`flex items-center justify-end gap-1 mt-1 text-[10px] ${isOwn ? 'text-orange-200' : 'text-[#6b6460] light:text-[#a0958a]'}`}>
-                              <span>{new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                              {isOwn && (
-                                message.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />
-                              )}
+                    <div className="flex flex-col">
+                      {groupMessages(messages).map((dayGroup: MessageGroup) => (
+                        <div key={dayGroup.dateString} className="mb-6 last:mb-0">
+                          {/* Date Separator */}
+                          <div className="flex items-center justify-center mb-4">
+                            <div className="bg-orange-400/20 border border-orange-400/30 rounded-full px-3 py-1">
+                              <span className="text-xs font-semibold text-orange-400">
+                                {dayGroup.dateString}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Messages for this day */}
+                          <div className="space-y-1">
+                            {(dayGroup.messages as GroupedMessage[]).map((message) => {
+                              const isOwn = message.senderId === session?.user?.id;
+
+                              return (
+                                <div
+                                  key={message.id}
+                                  className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                                >
+                                  <div
+                                    className={`
+                                      max-w-[85%] sm:max-w-[75%] px-2.5 sm:px-3 py-2
+                                      ${isOwn ? 'bg-orange-400 text-white' : 'bg-[#2a2723] light:bg-[#f5f1ea] text-white light:text-black border border-[#3e3a33] light:border-[#d4caba]'}
+                                      ${
+                                        // Single message or last in group: fully rounded
+                                        (message.isFirstInGroup && message.isLastInGroup) || (!message.isFirstInGroup && message.isLastInGroup)
+                                          ? 'rounded-lg'
+                                          : // First in group (with more messages following): cut top corner
+                                          message.isFirstInGroup
+                                          ? isOwn
+                                            ? 'rounded-tl-lg rounded-bl-lg rounded-br-lg' // Own: cut top-right
+                                            : 'rounded-tr-lg rounded-br-lg rounded-bl-lg' // Their: cut top-left
+                                          : // Middle of group: same as first (cut top corner)
+                                          isOwn
+                                          ? 'rounded-tl-lg rounded-bl-lg rounded-br-lg'
+                                          : 'rounded-tr-lg rounded-br-lg rounded-bl-lg'
+                                      }
+                                    `}
+                                  >
+                                    <p className="text-xs sm:text-sm break-words">{message.content}</p>
+
+                                    {/* Only show timestamp on last message in group */}
+                                    {message.showTimestamp && (
+                                      <div className={`flex items-center justify-end gap-1 mt-1 text-[10px] ${isOwn ? 'text-orange-200' : 'text-[#6b6460] light:text-[#a0958a]'}`}>
+                                        <span>{new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                        {isOwn && (
+                                          message.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Typing Indicator */}
+                      {typingState && (
+                        <div className="flex justify-start mb-2">
+                          <div className="bg-[#2a2723] light:bg-[#f5f1ea] border border-[#3e3a33] light:border-[#d4caba] rounded-lg px-3 py-2 flex items-center gap-2">
+                            <span className="text-xs text-[#a0958a] light:text-[#5a5449]">
+                              {typingState.handle} is typing
+                            </span>
+                            <div className="flex gap-1">
+                              <div className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce [animation-delay:0ms]"></div>
+                              <div className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce [animation-delay:150ms]"></div>
+                              <div className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce [animation-delay:300ms]"></div>
                             </div>
                           </div>
                         </div>
-                      );
-                    })
+                      )}
+
+                      <div ref={messagesEndRef} />
+                    </div>
                   )}
-                  <div ref={messagesEndRef} />
                 </div>
 
                 {/* Message Input */}
@@ -247,7 +369,13 @@ export default function MessagesPage() {
                     <input
                       type="text"
                       value={messageInput}
-                      onChange={(e) => setMessageInput(e.target.value)}
+                      onChange={(e) => {
+                        setMessageInput(e.target.value);
+                        // Send typing indicator when user types
+                        if (selectedConversation && e.target.value.trim()) {
+                          sendTypingIndicator(selectedConversation.id);
+                        }
+                      }}
                       placeholder="Type a message..."
                       maxLength={1000}
                       className="flex-1 px-2.5 sm:px-3 py-2 text-xs sm:text-sm bg-[#2a2723] light:bg-white border border-[#474239] light:border-[#d4caba] rounded-lg text-white light:text-black placeholder-[#6b6460] light:placeholder-[#a0958a] focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-transparent"
