@@ -3,10 +3,10 @@ import { prisma } from '@chess960/db';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ page: string }> }
+  { params }: { params: { page: string } }
 ) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://chess960.game';
-  const { page } = await params;
+  const { page } = params;
   const pageNum = parseInt(page) || 1;
   const usersPerPage = 1000;
   const skip = (pageNum - 1) * usersPerPage;
