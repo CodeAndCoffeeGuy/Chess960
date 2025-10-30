@@ -60,24 +60,10 @@ export default async function GamePage({ params }: GamePageProps) {
       notFound();
     }
 
-    // For now, redirect to analysis page
-    // In the future, this could be a game viewer page
-    return (
-      <div className="min-h-screen bg-[#1f1d1a] light:bg-[#f5f1ea] text-white light:text-black flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Game Viewer</h1>
-          <p className="text-[#a0958a] light:text-[#5a5449] mb-4">
-            Game analysis and replay coming soon
-          </p>
-          <a 
-            href={`/game/${gameId}/analysis`}
-            className="px-4 py-2 bg-orange-400 text-white rounded-lg hover:bg-orange-500 transition-colors"
-          >
-            View Analysis
-          </a>
-        </div>
-      </div>
-    );
+    // Redirect to analysis page
+    // Using redirect() for proper server-side redirect
+    const { redirect } = await import('next/navigation');
+    redirect(`/game/${gameId}/analysis`);
   } catch (error) {
     console.error('Error loading game:', error);
     notFound();

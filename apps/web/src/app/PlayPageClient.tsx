@@ -694,6 +694,7 @@ function PlayPageContent() {
                   />
                 )}
 
+
                 {/* Moves List with Navigation */}
                 <div className="bg-[#2a2825]/90 light:bg-white/90 backdrop-blur-sm border-2 border-[#3a3632] light:border-[#d4caba] rounded-xl p-3 shadow-xl flex-1 flex flex-col min-h-0">
                   <div className="text-xs font-semibold text-gray-400 light:text-[#5a5449] mb-2">

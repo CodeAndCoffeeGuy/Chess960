@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@chess960/db';
+import { getChess960Position } from '@chess960/utils';
 
 export async function GET(
   request: NextRequest,
@@ -28,6 +29,17 @@ export async function GET(
       return NextResponse.json({ error: 'Game not found' }, { status: 404 });
     }
 
+    // Compute initialFen for Chess960 games
+    let initialFen: string | undefined;
+    if (game.variant === 'CHESS960' && game.chess960Position) {
+      try {
+        const chess960Pos = getChess960Position(game.chess960Position);
+        initialFen = chess960Pos.fen;
+      } catch (error) {
+        console.error('Error computing Chess960 FEN:', error);
+      }
+    }
+
     const formattedGame = {
       id: game.id,
       tc: game.tc === 'ONE_PLUS_ZERO' ? '1+0' : '2+0',
@@ -48,6 +60,9 @@ export async function GET(
       duration: game.startedAt && game.endedAt
         ? Math.round((game.endedAt.getTime() - game.startedAt.getTime()) / 1000)
         : null,
+      chess960Position: game.chess960Position,
+      variant: game.variant,
+      initialFen,
     };
 
     return NextResponse.json({ game: formattedGame });

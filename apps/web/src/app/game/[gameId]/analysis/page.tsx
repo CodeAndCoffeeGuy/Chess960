@@ -35,7 +35,6 @@ interface GameData {
 
 export default function GameAnalysisPage({ params }: GameAnalysisPageProps) {
   const { gameId } = use(params);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [gameData, setGameData] = useState<GameData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +83,7 @@ export default function GameAnalysisPage({ params }: GameAnalysisPageProps) {
 
   // Convert UCI moves to proper PGN format
   const movesToPgn = (uciMoves: string[], gameData: GameData) => {
-    const chess = new Chess();
+    const chess = new Chess(gameData.initialFen);
     const sanMoves: string[] = [];
 
     // Convert each UCI move to SAN
@@ -153,14 +152,10 @@ export default function GameAnalysisPage({ params }: GameAnalysisPageProps) {
     return headers + moveText + ' ' + pgnResult;
   };
 
-  const handleStartAnalysis = () => {
-    setIsAnalyzing(true);
-    // Analysis will be handled by the PostGameReport component
-  };
-
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
-    // Could show toast notification here
+    // Show notification
+    alert('Game link copied to clipboard!');
   };
 
   const handleDownloadPGN = () => {
@@ -197,34 +192,50 @@ export default function GameAnalysisPage({ params }: GameAnalysisPageProps) {
           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:40px_40px]" />
         </div>
       </div>
-      <div className="relative container mx-auto px-4 py-4">
-        {/* Action Buttons */}
-        <div className="mb-6 flex gap-4">
-          <button
-            onClick={handleStartAnalysis}
-            disabled={isAnalyzing}
-            className="bg-orange-600 hover:bg-orange-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-          >
-            {isAnalyzing ? 'Analyzing...' : 'Start Analysis'}
-          </button>
-          <button
-            onClick={handleShare}
-            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-          >
-            Share Game
-          </button>
-          <button
-            onClick={handleDownloadPGN}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-          >
-            Download PGN
-          </button>
-        </div>
-
-        {/* Game Result */}
-        <div className="mb-6 p-4 bg-gray-800 rounded-lg">
-          <h3 className="text-lg font-semibold text-white mb-2">Game Result</h3>
-          <p className="text-gray-300">{formatResult(gameData.result)}</p>
+      <div className="relative container mx-auto px-4 py-4 max-w-7xl">
+        {/* Game Header with Actions */}
+        <div className="mb-6 bg-[#2a2825] border border-[#3a3632] rounded-xl p-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            {/* Game Info */}
+            <div>
+              <h1 className="text-2xl font-bold text-white mb-2">Game Analysis</h1>
+              <div className="flex items-center gap-4 text-sm text-[#a0958a]">
+                <span>
+                  <span className="font-semibold text-white">{gameData.whiteHandle}</span> vs{' '}
+                  <span className="font-semibold text-white">{gameData.blackHandle}</span>
+                </span>
+                <span>•</span>
+                <span>{formatResult(gameData.result)}</span>
+                <span>•</span>
+                <span>{gameData.tc}</span>
+                {gameData.rated && <span className="px-2 py-0.5 bg-orange-600/20 text-orange-400 rounded text-xs">Rated</span>}
+              </div>
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleShare}
+                className="bg-[#3a3632] hover:bg-[#474239] text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                title="Share game link"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                Share
+              </button>
+              <button
+                onClick={handleDownloadPGN}
+                className="bg-[#3a3632] hover:bg-[#474239] text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                title="Download PGN file"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                PGN
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Main Content */}
