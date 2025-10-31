@@ -140,6 +140,12 @@ const nextConfig = {
       config.externals = [...config.externals, '@prisma/client', 'stockfish']
     }
 
+    // Resolve workspace packages
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@chess960/board': path.resolve(__dirname, '../../packages/chess960-board/src'),
+    };
+
     // Fix PostHog Node.js modules issue
     if (!isServer) {
       config.resolve.fallback = {
