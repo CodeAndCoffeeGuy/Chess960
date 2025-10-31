@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Chess } from 'chess.js';
-import { ReactChessBoard } from '@/components/chess/ReactChessBoard';
+import { Chess960Board } from '@chess960/board';
+import { useTheme } from '@/contexts/ThemeContext';
 import { BulletStyleClock } from '@/components/chess/BulletStyleClock';
 import { MatchmakingQueue } from '@/components/game/MatchmakingQueue';
 import { GameResultModal } from '@/components/game/GameResultModal';
@@ -100,6 +101,11 @@ function PlayPageContent() {
     currentGame,
     gameState
   } = useGame();
+
+  const { boardTheme, pieceSet } = useTheme();
+  const [pendingPromotion, setPendingPromotion] = useState<{ from: string; to: string } | null>(null);
+  const [showPromotionDialog, setShowPromotionDialog] = useState(false);
+  const [boardArrows, setBoardArrows] = useState<Array<{ startSquare: string; endSquare: string; color?: string }>>([]);
 
   // Check authentication on component mount
   useEffect(() => {
@@ -305,6 +311,99 @@ function PlayPageContent() {
     }
   }, [currentGame?.moves.length]);
 
+  // Compute current FEN position based on moves and viewing index
+  const currentPosition = useMemo(() => {
+    if (!currentGame) return 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+    
+    const chess = new Chess(currentGame.initialFen || undefined);
+    const movesToApply = viewingMoveIndex !== null && viewingMoveIndex >= 0
+      ? currentGame.moves.slice(0, viewingMoveIndex + 1)
+      : currentGame.moves || [];
+    
+    for (const uciMove of movesToApply) {
+      try {
+        const from = uciMove.slice(0, 2);
+        const to = uciMove.slice(2, 4);
+        const promotion = uciMove.length > 4 ? uciMove[4] : undefined;
+        chess.move({ from, to, promotion: promotion as any });
+      } catch (e) {
+        console.error('Error applying move:', e);
+      }
+    }
+    
+    return chess.fen();
+  }, [currentGame?.moves, currentGame?.initialFen, viewingMoveIndex]);
+
+  // Compute last move squares
+  const lastMove = useMemo<[string, string] | null>(() => {
+    if (!currentGame?.moves || currentGame.moves.length === 0) return null;
+    
+    const movesToCheck = viewingMoveIndex !== null && viewingMoveIndex >= 0
+      ? currentGame.moves.slice(0, viewingMoveIndex + 1)
+      : currentGame.moves;
+    
+    if (movesToCheck.length === 0) return null;
+    const lastUciMove = movesToCheck[movesToCheck.length - 1];
+    if (lastUciMove && lastUciMove.length >= 4) {
+      return [lastUciMove.slice(0, 2), lastUciMove.slice(2, 4)];
+    }
+    return null;
+  }, [currentGame?.moves, viewingMoveIndex]);
+
+
+  // Handle board move
+  const handleMove = (from: string, to: string, promotion?: 'p' | 'r' | 'n' | 'b' | 'q' | 'k') => {
+    if (!currentGame || currentGame.ended) return;
+    
+    // Note: Premoves are handled by the Chess960Board component internally.
+    // When it becomes the player's turn, the board will call this function automatically.
+    // So we don't need to check for premoves here - if this function is called,
+    // it means it's the player's turn (or a premove is being executed).
+
+    // Check if it's a pawn promotion
+    const chess = new Chess(currentPosition);
+    const piece = chess.get(from as any);
+    const isPawn = piece?.type === 'p';
+    const targetRank = to[1];
+    const isPromotion = isPawn && (
+      (piece?.color === 'w' && targetRank === '8') ||
+      (piece?.color === 'b' && targetRank === '1')
+    );
+
+    if (isPromotion && !promotion) {
+      // Show promotion dialog
+      setPendingPromotion({ from, to });
+      setShowPromotionDialog(true);
+      return;
+    }
+
+    // Make the move
+    const moveUci = from + to + (promotion || '');
+    makeMove(currentGame.id, moveUci, Date.now());
+  };
+
+  // Handle promotion selection
+  const handlePromotionSelect = (piece: 'q' | 'r' | 'b' | 'n') => {
+    if (pendingPromotion) {
+      handleMove(pendingPromotion.from, pendingPromotion.to, piece);
+      setPendingPromotion(null);
+      setShowPromotionDialog(false);
+    }
+  };
+
+  // Compute board orientation
+  const boardOrientation = useMemo(() => {
+    if (isBoardFlipped) {
+      return currentGame?.color === 'white' ? 'black' : 'white';
+    }
+    return currentGame?.color === 'white' ? 'white' : 'black';
+  }, [isBoardFlipped, currentGame?.color]);
+
+  // Update arrow count when arrows change
+  useEffect(() => {
+    setArrowCount(boardArrows.length);
+  }, [boardArrows]);
+
   // Move navigation handlers
   const goToFirstMove = () => {
     setViewingMoveIndex(0);
@@ -348,6 +447,7 @@ function PlayPageContent() {
     onEscape: () => {
       // Cancel premoves, clear selection, go back to live position
       setViewingMoveIndex(null);
+      setBoardArrows([]);
     },
 
     // Game actions (only when game is active)
@@ -546,16 +646,27 @@ function PlayPageContent() {
               </div>
 
               {/* Chess Board - BIGGER FOR LAPTOP */}
-              <div className="relative w-full lg:w-[700px] lg:h-[700px]">
-                  <ReactChessBoard
-                    game={currentGame}
-                    onMove={makeMove}
-                    flipped={isBoardFlipped}
-                    onArrowsUpdate={(count, clearFn) => {
-                      setArrowCount(count);
-                      setClearArrowsFn(() => clearFn);
-                    }}
-                  />
+              <div className="relative w-full lg:w-[700px] lg:h-[700px] flex items-center justify-center">
+                    <Chess960Board
+                      fen={currentPosition}
+                      orientation={boardOrientation}
+                      width={640}
+                      readOnly={currentGame.ended || viewingMoveIndex !== null}
+                      showCoordinates={true}
+                      theme={boardTheme}
+                      pieceSet={pieceSet}
+                      lastMove={lastMove}
+                      currentPlayerColor={currentGame.color}
+                      arrows={boardArrows}
+                      onArrowsChange={setBoardArrows}
+                      enablePremove={!currentGame.ended}
+                      onMove={viewingMoveIndex === null ? handleMove : undefined}
+                      onPromotionSelect={handlePromotionSelect}
+                      animationDuration={200}
+                      showDestinations={true}
+                      rookCastle={true}
+                      moveInputMode="both"
+                    />
 
                   {/* Board Controls */}
                   <div className="absolute -bottom-12 left-0 right-0 flex items-center justify-between px-2">
@@ -563,7 +674,10 @@ function PlayPageContent() {
                   <div className="relative">
                     <ArrowsControl
                       arrowCount={arrowCount}
-                      onClearArrows={() => clearArrowsFn?.()}
+                      onClearArrows={() => {
+                        setBoardArrows([]);
+                        setClearArrowsFn(() => () => setBoardArrows([]));
+                      }}
                     />
                   </div>
 
@@ -580,6 +694,17 @@ function PlayPageContent() {
                   </button>
                 </div>
               </div>
+
+              {/* Promotion Dialog */}
+              <PromotionDialog
+                isOpen={showPromotionDialog}
+                playerColor={currentGame.color}
+                onSelect={handlePromotionSelect}
+                onCancel={() => {
+                  setShowPromotionDialog(false);
+                  setPendingPromotion(null);
+                }}
+              />
 
               {/* Player Card - SIMPLIFIED */}
               <div className="w-full lg:w-[700px] bg-[#2a2825]/90 light:bg-white/90 backdrop-blur-sm border-2 border-[#3a3632] light:border-[#d4caba] rounded-xl px-6 py-4 shadow-xl mt-3">
