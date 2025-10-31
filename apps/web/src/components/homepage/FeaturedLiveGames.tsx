@@ -7,7 +7,15 @@ import { Chess960Board } from '@chess960/board';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Chess } from 'chess.js';
 import { Eye, TrendingUp } from 'lucide-react';
-import { getRandomChess960Position } from '@chess960/utils';
+
+// Safely import getRandomChess960Position with fallback
+let getRandomChess960Position: (() => { position: number; fen: string; pieces: string[] }) | null = null;
+try {
+  const utils = require('@chess960/utils');
+  getRandomChess960Position = utils.getRandomChess960Position;
+} catch (err) {
+  console.warn('Could not import getRandomChess960Position, using fallback');
+}
 
 // Helper component to compute current FEN from initial FEN and moves
 function GameBoardPreview({ initialFen, moves }: { initialFen?: string; moves: string[] }) {
@@ -73,10 +81,13 @@ export function FeaturedLiveGames() {
   // Wrap in try-catch to handle any import errors gracefully
   const [placeholderPositions] = useState(() => {
     try {
-      return [
-        getRandomChess960Position(),
-        getRandomChess960Position(),
-      ];
+      if (getRandomChess960Position) {
+        return [
+          getRandomChess960Position(),
+          getRandomChess960Position(),
+        ];
+      }
+      throw new Error('getRandomChess960Position not available');
     } catch (err) {
       console.error('Error generating placeholder positions:', err);
       // Fallback to standard position
