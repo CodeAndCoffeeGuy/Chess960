@@ -7,15 +7,7 @@ import { Chess960Board } from '@chess960/board';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Chess } from 'chess.js';
 import { Eye, TrendingUp } from 'lucide-react';
-
-// Safely import getRandomChess960Position with fallback
-let getRandomChess960Position: (() => { position: number; fen: string; pieces: string[] }) | null = null;
-try {
-  const utils = require('@chess960/utils');
-  getRandomChess960Position = utils.getRandomChess960Position;
-} catch (err) {
-  console.warn('Could not import getRandomChess960Position, using fallback');
-}
+import { getRandomChess960Position } from '@chess960/utils';
 
 // Helper component to compute current FEN from initial FEN and moves
 function GameBoardPreview({ initialFen, moves }: { initialFen?: string; moves: string[] }) {
