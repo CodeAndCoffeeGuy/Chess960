@@ -67,13 +67,14 @@ export function FeaturedLiveGames() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { on, isConnected } = useWebSocket();
+
   const intervalRefs = useRef<NodeJS.Timeout[]>([]);
   
   // Generate Chess960 positions for placeholders (consistent per board)
   // Wrap in try-catch to handle any import errors gracefully
   const [placeholderPositions] = useState(() => {
     try {
-      if (getRandomChess960Position) {
+      if (typeof getRandomChess960Position === 'function') {
         return [
           getRandomChess960Position(),
           getRandomChess960Position(),
@@ -159,7 +160,7 @@ export function FeaturedLiveGames() {
 
   // Subscribe to move updates via WebSocket
   useEffect(() => {
-    if (!isConnected || games.length === 0) return;
+    if (!isConnected || !on || games.length === 0) return;
 
     const unsubscribeMoveMade = on('move.made', (message: any) => {
       setGames(prevGames => {
