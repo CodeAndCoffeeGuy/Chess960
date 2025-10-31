@@ -20,7 +20,8 @@ const nextConfig = {
     '@chess960/timer',
     '@chess960/streaming',
     '@chess960/rating',
-    '@chess960/stockfish'
+    '@chess960/stockfish',
+    '@chess960/board'
   ],
   
   // Fix workspace root warning - always include workspace root for Vercel
